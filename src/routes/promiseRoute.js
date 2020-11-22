@@ -1,5 +1,7 @@
-module.exports = function(app){
-    const promise = require('../controllers/promiseController');
+const express = require("express");
+const router = express.Router();
+const promise = require('../controllers/promiseController');
 
-    app.get('/app/promise-list', promise.getPromiseAll); 
-};     
+router.get("/app/promise-list", promise.getPromiseAll);
+
+module.exports = router;
