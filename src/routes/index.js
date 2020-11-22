@@ -1,10 +1,7 @@
 var express = require('express');
 var router = express.Router();
 
-module.exports = function () {
-const app = express();
+router.use("/", require("./promiseRoute"));
+router.use("/", require("./userRoute"));
 
-require('./promiseRoute')(app);
-
-return app;
-}
+module.exports = router;
