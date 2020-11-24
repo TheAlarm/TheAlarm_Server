@@ -1,7 +1,7 @@
 // const { query } = require('../../../config/database');
 // const { logger } = require('../../../config/winston');
-const { getMysqlPool } = require('../../modules/database');
-const database = require('../../modules/database');
+const { getMysqlPool } = require('../../modules/dbModule');
+const database = require('../../modules/dbModule');
 const utils = require('../../modules/response')
 
 /**
