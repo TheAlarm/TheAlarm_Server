@@ -3,6 +3,7 @@ const { query } = require('../../modules/dbModule');
 const utils = require('../../modules/response');
 const statusCode = require('../../modules/statusCode');
 const responseMessage = require('../../modules/responseMessage');
+const moment = require('moment');
 
 /**
  * 2020.11.21
@@ -32,21 +33,35 @@ exports.getAllPromise = async function (req, res) {
     // return res.send(utils.successFalse(400, "유저아이디가 존재하지않습니다."));
 }
 
+/**
+ * 
+ * @TODO userIdx 받아와서 넘겨야 함 (수민)
+ */
 exports.postPromise = async function (req, res) {
     console.log("다짐 쓰기 API");
 
     try {
         const {
-            promise
+            promise,
+            public
         } = req.body;
 
+        const postPromiseQuery = `INSERT INTO promise(promise, createdAt, public, userIdx) VALUES (?, ?, ?, ?)`;
+        const date = Date.now();
+        const curTime = moment(date).format('YYYY-MM-DD HH:mm:ss');
 
+        const result = await query(postPromiseQuery, [promise, curTime, public, 1]);
 
-        if (!promise) {
-            return res.send(utils.successFalse(400, "다짐을 작성해주세요"));
+        if (!result) {
+            return res.status(statusCode.BAD_REQUEST).send(utils.successFalse(statusCode.BAD_REQUEST, "다짐 작성 실패"));
         }
+        
+        return res.status(statusCode.OK).send(utils.successTrue(statusCode.OK, responseMessage.OK, promise));
+        
     } catch (err) {
         console.log(err);
+
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(statusCode.INTERNAL_SERVER_ERROR, responseMessage.INTERNAL_SERVER_ERROR));
     }
 
 }
