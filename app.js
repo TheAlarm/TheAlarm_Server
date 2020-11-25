@@ -6,12 +6,14 @@ var logger = require('morgan');
 
 var indexRouter = require('./src/routes/index');
 
+const swaggerDoc = require('./swaggerDocs');
+
 var app = express();
 
 // view engine setup
 // app.set('views', path.join(__dirname, 'views'));
 // app.set('view engine', 'jade');
-
+app.use(swaggerDoc);
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

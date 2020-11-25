@@ -9,6 +9,52 @@ const moment = require('moment');
  * 2020.11.21
  * 다짐목록 조회
  */
+/**
+ * @swagger
+ * definitions:
+ *  boardItem:
+ *   type: object
+ *   required:
+ *     - boardTitle
+ *     - boardContent
+ *     - boardState
+ *     - boardType
+ *   properties:
+ *     id:
+ *       type: integer
+ *       description: ObjectId
+ *     boardTitle:
+ *       type: string
+ *       description: 게시글 제목
+ *     boardContent:
+ *       type: string
+ *       description: 게시글 내용
+ *     boardState:
+ *       type: boolean
+ *       description: 게시글 숨김상태여부
+ *     boardType:
+ *       type: string
+ *       description: 게시글 타입
+ */
+
+/**
+ * @swagger
+ *  /app/promise-list:
+ *    get:
+ *      tags:
+ *      - Promise
+ *      description: 다짐 목록을 조회한다
+ *      produces:
+ *      - application/json
+ *      parameters:
+ *      responses:
+ *       200:
+ *        description: board of column list
+ *        schema:
+ *          type: array
+ *          items:
+ *           $ref: '#/definitions/boardItem'
+ */
 exports.getAllPromise = async function (req, res) {
     console.log("다짐목록 조회 API");
 
