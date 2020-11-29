@@ -76,7 +76,6 @@ exports.getAllPromise = async function (req, res) {
         
         return res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(statusCode.INTERNAL_SERVER_ERROR, responseMessage.INTERNAL_SERVER_ERROR));
     }
-    // return res.send(utils.successFalse(400, "유저아이디가 존재하지않습니다."));
 }
 
 /**
