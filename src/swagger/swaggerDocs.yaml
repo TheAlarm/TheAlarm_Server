@@ -1,0 +1,107 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Alarm API Docs
+  description: Alarm API 문서입니다
+  license:
+    name: MIT
+servers:
+  - description: Alarm Server
+    url: 'http://localhost:3232'
+paths:
+  /app/promise-list:
+    get:
+      summary: Get all promises
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  "isSuccess":
+                    type: boolean
+                  "code":
+                    type: integer
+                  "message":
+                    type: string
+                  "result":
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Promise"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        600:
+          $ref: "#/components/responses/DBError"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+        default:
+          $ref: "#/components/responses/InternalServerError"
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Promise:
+      type: object
+      required:
+        - promiseIdx
+        - promise
+        - createdAt
+        - public
+        - userIdx
+      properties:
+        promiseIdx:
+          type: integer
+          description: ObjectID
+        promise:
+          type: string
+        createdAt:
+          type: string
+        public:
+          type: string
+        userIdx:
+          type: integer
+    Error:
+      type: object
+      properties:
+        isSuccess:
+          type: boolean
+        code:
+          type: integer
+        message:
+          type: string
+  responses:
+    BadRequest:
+      description: 잘못된 요청
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            isSuccess: false
+            code: 400
+            message: 잘못된 요청
+    InternalServerError:
+      description: 서버 에러
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            isSuccess: false
+            code: 500
+            message: 서버 내부 오류
+    DBError:
+      description: 데이터베이스 에러
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            isSuccess: false
+            code: 600
+            message: 데이터베이스 에러

@@ -1,0 +1,28 @@
+get:
+  summary: Get all promises
+  responses:
+    200:
+      description: OK
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              "isSuccess":
+                type: boolean
+              "code":
+                type: integer
+              "message":
+                type: string
+              "result":
+                type: array
+                items:
+                  $ref: "../openapi.yaml#/components/schemas/Promise"
+    400:
+      $ref: "../openapi.yaml#/components/responses/BadRequest"
+    600:
+      $ref: "../openapi.yaml#/components/responses/DBError"
+    500:
+      $ref: "../openapi.yaml#/components/responses/InternalServerError"
+    default:
+      $ref: "../openapi.yaml#/components/responses/InternalServerError"
