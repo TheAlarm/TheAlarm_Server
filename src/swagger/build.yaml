@@ -38,6 +38,37 @@ paths:
           $ref: '#/components/responses/DBError'
         default:
           $ref: '#/components/responses/InternalServerError'
+  /app/promise:
+    post:
+      summary: Create promise
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Promise'
+      responses:
+        '201':
+          description: Create Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  isSuccess:
+                    type: boolean
+                  code:
+                    type: integer
+                  message:
+                    type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '600':
+          $ref: '#/components/responses/DBError'
+        default:
+          $ref: '#/components/responses/InternalServerError'
 components:
   securitySchemes:
     BearerAuth:

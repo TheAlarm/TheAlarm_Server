@@ -1,2 +1,4 @@
 /app/promise-list:
+  $ref: "./promise-list.yaml"
+/app/promise:
   $ref: "./promise.yaml"
