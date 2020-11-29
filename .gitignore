@@ -9,6 +9,7 @@
 
 # swagger
 src/swagger/build.yaml
+src/swagger/openapi.yaml
 
 ### Git ###
 # Created by git for backups. To disable backups in Git:
