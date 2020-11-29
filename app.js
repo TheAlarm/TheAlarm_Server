@@ -6,14 +6,15 @@ var logger = require('morgan');
 
 var indexRouter = require('./src/routes/index');
 
-const swaggerDoc = require('./swaggerDocs');
+// using Swagger
+const swaggerUi = require("swagger-ui-express")
+const yaml = require('yamljs');
 
 var app = express();
 
 // view engine setup
 // app.set('views', path.join(__dirname, 'views'));
 // app.set('view engine', 'jade');
-app.use(swaggerDoc);
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -21,6 +22,11 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
+
+// using Swagger
+const swaggerSpec = yaml.load(path.join(__dirname, "./src/swagger/build.yaml"));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
