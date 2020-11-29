@@ -17,7 +17,6 @@ exports.getAllPromise = async function (req, res) {
         const result = await query(getAllPromiseQuery);
 
         const promiseList = new Array();
-        const promiseItem = new Object();
 
         for (var i = 0; i < result.length; i++) {
             promiseList.push(result[i].promise);
