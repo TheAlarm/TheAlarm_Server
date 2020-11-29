@@ -1,43 +1,43 @@
 openapi: 3.0.0
 info:
   version: 1.0.0
-  title: Alarm API Docs
-  description: Alarm API 문서입니다
+  title: Wooly API Docs
+  description: Wooly API 문서입니다
   license:
     name: MIT
 servers:
-  - description: Alarm Server
+  - description: dev server
     url: 'http://localhost:3232'
 paths:
   /app/promise-list:
     get:
       summary: Get all promises
       responses:
-        200:
+        '200':
           description: OK
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  "isSuccess":
+                  isSuccess:
                     type: boolean
-                  "code":
+                  code:
                     type: integer
-                  "message":
+                  message:
                     type: string
-                  "result":
+                  result:
                     type: array
                     items:
-                      $ref: "#/components/schemas/Promise"
-        400:
-          $ref: "#/components/responses/BadRequest"
-        600:
-          $ref: "#/components/responses/DBError"
-        500:
-          $ref: "#/components/responses/InternalServerError"
+                      $ref: '#/components/schemas/Promise'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '600':
+          $ref: '#/components/responses/DBError'
         default:
-          $ref: "#/components/responses/InternalServerError"
+          $ref: '#/components/responses/InternalServerError'
 components:
   securitySchemes:
     BearerAuth:
