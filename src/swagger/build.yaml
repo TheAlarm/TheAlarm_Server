@@ -28,7 +28,7 @@ paths:
                     type: string
                   result:
                     type: array
-                      items:
+                    items:
                       $ref: "#/components/schemas/Promise"
         400:
           $ref: "#/components/responses/BadRequest"
