@@ -15,7 +15,9 @@ get:
               "message":
                 type: string
               "result":
-                type: string
+                type: array
+                items:
+                  $ref: "../openapi.yaml#/components/schemas/Promise"
     400:
       $ref: "../openapi.yaml#/components/responses/BadRequest"
     600:

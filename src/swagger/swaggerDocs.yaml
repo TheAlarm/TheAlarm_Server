@@ -20,13 +20,13 @@ paths:
               schema:
                 type: object
                 properties:
-                  isSuccess:
+                  "isSuccess":
                     type: boolean
-                  code:
+                  "code":
                     type: integer
-                  message:
+                  "message":
                     type: string
-                  result:
+                  "result":
                     type: array
                     items:
                       $ref: "#/components/schemas/Promise"

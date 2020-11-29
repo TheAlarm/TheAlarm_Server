@@ -24,7 +24,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 
 // using Swagger
-const swaggerSpec = yaml.load(path.join(__dirname, "./src/swagger/build.yaml"));
+const swaggerSpec = yaml.load(path.join(__dirname, "./src/swagger/swaggerDocs.yaml"));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 
