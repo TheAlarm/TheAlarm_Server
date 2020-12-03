@@ -1,4 +1,17 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Wooly API Docs
+  description: Wooly API 문서입니다
+  license:
+    name: MIT
+servers:
+  - description: dev server
+    url: http://localhost:3232
+paths:
+  $ref: "./paths/_index.yaml"
 components:
+  # securitySchemes 생략 가능
   securitySchemes:
     BearerAuth:
       type: http
