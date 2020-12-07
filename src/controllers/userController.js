@@ -7,8 +7,7 @@ const statusCode = require("../../modules/statusCode");
 const responseMessage = require("../../modules/responseMessage");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
-const config = require('../../config/config')
-
+const config = require("../../config/config");
 
 /**
  * 2020.12.06
@@ -21,22 +20,62 @@ exports.signUp = async function (req, res) {
   try {
     const { nickname, email, password } = req.body;
 
-    if (!nickname) return res.send(utils.successFalse(statusCode.NO_CONTENT, responseMessage.EMPTY_NICKNAME));
-    if (!email) return res.send(utils.successFalse(statusCode.NO_CONTENT, responseMessage.EMPTY_EMAIL));
-    if (!password) return res.send(utils.successFalse(statusCode.NO_CONTENT, responseMessage.EMPTY_PASSWORD));
-    if (password.length < 4 || password.length > 10) return res.send(utils.successFalse(statusCode.INVALID_CONTENT, responseMessage.PASSWORD_RULE));
+    //body 값 확인
+    if (!nickname)
+      return res.send(
+        utils.successFalse(
+          statusCode.NO_CONTENT,
+          responseMessage.EMPTY_NICKNAME
+        )
+      );
+    if (!email)
+      return res.send(
+        utils.successFalse(statusCode.NO_CONTENT, responseMessage.EMPTY_EMAIL)
+      );
+      // TODO: 이메일 정규식 추가하기
+    if (!password)
+      return res.send(
+        utils.successFalse(
+          statusCode.NO_CONTENT,
+          responseMessage.EMPTY_PASSWORD
+        )
+      );
+    if (password.length < 4 || password.length > 10)
+      return res.send(
+        utils.successFalse(
+          statusCode.INVALID_CONTENT,
+          responseMessage.PASSWORD_RULE
+        )
+      );
 
-    const hashedPwd = await crypto.createHash("sha512").update(password).digest("hex");
+    // 이메일 중복 확인
+    const getUserEmailResult = await query(
+      `SELECT email FROM userInfo WHERE email = ?`,
+      [email]
+    );
+    if (getUserEmailResult.length > 0)
+      return res.send(
+        utils.successFalse(
+          statusCode.INVALID_CONTENT,
+          responseMessage.DUPLICATE_EMAIL
+        )
+      );
+
+    const hashedPwd = await crypto
+      .createHash("sha512")
+      .update(password)
+      .digest("hex");
 
     const signUpUserResult = await query(
-      `INSERT INTO userInfo (nickname, email, password, type) VALUES (?, ?, ?, ?)`, [nickname, email, hashedPwd, "local"]
+      `INSERT INTO userInfo (nickname, email, password, type) VALUES (?, ?, ?, ?)`,
+      [nickname, email, hashedPwd, "local"]
     );
-    const userInfoIdx = signUpUserResult.insertId
 
     //토큰 생성
+    const userIdx = signUpUserResult.insertId;
     let token = await jwt.sign(
       {
-        userInfoIdx: userInfoIdx,
+        userIdx: userIdx,
         id: nickname,
       }, // 토큰의 내용(payload)
       config.SECRET_ACCESS_KEY, // 비밀 키
@@ -45,37 +84,98 @@ exports.signUp = async function (req, res) {
         subject: "userInfo",
       } // 유효 시간은 365일
     );
-    return res.send(utils.successTrue(statusCode.OK, responseMessage.SIGN_UP_SUCCESS, {token, userInfoIdx}));
-
+    return res.send(
+      utils.successTrue(statusCode.OK, responseMessage.SIGN_UP_SUCCESS, {
+        token,
+        userIdx,
+      })
+    );
   } catch (err) {
-    return res.send(utils.successFalse(statusCode.INTERNAL_SERVER_ERROR,`Error: ${err.message}`));
+    return res.send(
+      utils.successFalse(
+        statusCode.INTERNAL_SERVER_ERROR,
+        `Error: ${err.message}`
+      )
+    );
   }
 };
 
+/**
+ * 2020.12.06
+ * 로그인 API
+ * /sign-in
+ * request body : email, password
+ * response body: token, userInfoIdx
+ */
 exports.signIn = async function (req, res) {
-  console.log("로그인 API");
-  return res.send(utils.successTrue(200, "로그인 성공"));
-};
-exports.kakaoLogin = async function (req, res) {
-  const kakaoAccessToken =
-    "H6_cvTCjmseeELUf__zujvoF0EmEJpAQnHX3OQopb7kAAAF2NB6RVw";
-  const options = {
-    method: "GET",
-    uri: "https://kapi.kakao.com/v2/user/me",
-    json: true,
-    headers: {
-      Authorization: `Bearer ${kakaoAccessToken}`,
-    },
-  };
-
   try {
-    const userInfo = await request(options);
+    const { email, password } = req.body;
 
-    console.log(userInfo);
+    // body 값 체크
+    if (!email)
+      return res.send(
+        utils.successFalse(statusCode.NO_CONTENT, responseMessage.EMPTY_EMAIL)
+      );
 
-    //return { accessToken };
-  } catch (e) {
-    throw e;
+    if (!password)
+      return res.send(
+        utils.successFalse(
+          statusCode.NO_CONTENT,
+          responseMessage.EMPTY_PASSWORD
+        )
+      );
+
+      // 로그인 확인
+    const getUserResult = await query(
+      `SELECT userIdx, nickname, email, password FROM userInfo WHERE email = ?`,
+      [email]
+    );
+    const userIdx = getUserResult[0].userIdx
+    let token = await jwt.sign(
+      {
+        userIdx: userIdx,
+        id: getUserResult[0].nickname,
+      }, // 토큰의 내용(payload)
+      config.SECRET_ACCESS_KEY, // 비밀 키
+      {
+        expiresIn: "365d",
+        subject: "userInfo",
+      } // 유효 시간은 365일
+    );
+
+    const hashedPwd = await crypto
+      .createHash("sha512")
+      .update(password)
+      .digest("hex");
+
+      if(getUserResult.length >= 1) {
+        if (getUserResult[0].password !== hashedPwd) {
+          return res.send(
+            utils.successFalse(
+              statusCode.NO_CONTENT,
+              responseMessage.WRONG_PASSWORD)
+          );
+        } else {
+          return res.send(
+            utils.successTrue(
+              statusCode.OK,
+              responseMessage.SIGN_IN_SUCCESS, {token, userIdx}))
+        }
+      } else {
+        return res.send(
+          utils.successFalse(
+            statusCode.NO_CONTENT,
+            responseMessage.NO_EXIST_USER)
+        );
+      }
+      
+  } catch (err) {
+    return res.send(
+      utils.successFalse(
+        statusCode.INTERNAL_SERVER_ERROR,
+        `Error: ${err.message}`
+      )
+    );
   }
 };
 

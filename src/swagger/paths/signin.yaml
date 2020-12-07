@@ -1,0 +1,41 @@
+post:
+  summary: 로그인 API
+  requestBody:
+        content:
+          application/json:
+            schema:      # Request body contents
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+              example:   # Sample object
+                email: larry@wooly.co.kr
+                password: 1111
+  responses:
+    200:
+      description: OK
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              "isSuccess":
+                type: boolean
+              "code":
+                type: integer
+              "message":
+                type: string
+              "result":
+                type: array
+                items:
+                  $ref: "../openapi.yaml#/components/schemas/Promise"
+    400:
+      $ref: "../openapi.yaml#/components/responses/BadRequest"
+    600:
+      $ref: "../openapi.yaml#/components/responses/DBError"
+    500:
+      $ref: "../openapi.yaml#/components/responses/InternalServerError"
+    default:
+      $ref: "../openapi.yaml#/components/responses/InternalServerError"

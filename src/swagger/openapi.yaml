@@ -38,6 +38,18 @@ components:
           type: string
         userIdx:
           type: integer
+    Auth:
+      type: object
+      required:
+        - token
+        - userIdx
+      properties:
+        token:
+          type: string
+          description: 토큰
+        userIdx:
+          type: integer
+          description: 유저 인덱스  
     Error:
       type: object
       properties:

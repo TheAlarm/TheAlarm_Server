@@ -1,2 +1,6 @@
 /app/promise-list:
   $ref: "./promise.yaml"
+/sign-up:
+  $ref: "./signup.yaml"
+/sign-in:
+  $ref: "./signin.yaml"
