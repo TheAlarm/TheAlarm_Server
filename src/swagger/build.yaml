@@ -38,6 +38,18 @@ paths:
           $ref: '#/components/responses/DBError'
         default:
           $ref: '#/components/responses/InternalServerError'
+  /app/promise:
+    post:
+      summary: Create promise
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Promise'
+      responses:
+        '201':
+          description: Create Success
   /sign-up:
     post:
       summary: 회원가입 API

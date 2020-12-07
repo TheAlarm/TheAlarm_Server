@@ -16,12 +16,6 @@ exports.getAllPromise = async function (req, res) {
         const getAllPromiseQuery = `SELECT * FROM promise`;
         const result = await query(getAllPromiseQuery);
 
-        const promiseList = new Array();
-
-        for (var i = 0; i < result.length; i++) {
-            promiseList.push(result[i].promise);
-        }
-
         const json = utils.successTrue(200, "다짐목록 조회", result);
 
         return res.status(statusCode.OK).send(json);
@@ -47,15 +41,17 @@ exports.postPromise = async function (req, res) {
 
         const postPromiseQuery = `INSERT INTO promise(promise, createdAt, public, userIdx) VALUES (?, ?, ?, ?)`;
         const date = Date.now();
-        const curTime = moment(date).format('YYYY-MM-DD HH:mm:ss');
+        const curTime = moment(date).format('YYYY-MM-DD HH:mm:ss'); // 현재 시간을 등록시간으로 보낸다.
 
-        const result = await query(postPromiseQuery, [promise, curTime, public, 1]);
+        const userIdx = 1;
+
+        const result = await query(postPromiseQuery, [promise, curTime, public, userIdx]);
 
         if (!result) {
             return res.status(statusCode.BAD_REQUEST).send(utils.successFalse(statusCode.BAD_REQUEST, "다짐 작성 실패"));
         }
         
-        return res.status(statusCode.OK).send(utils.successTrue(statusCode.OK, responseMessage.OK, promise));
+        return res.status(statusCode.CREATED).send(utils.successTrue(statusCode.CREATED, "다짐 작성 성공")); // @TODO result를 뺄까 말까?
         
     } catch (err) {
         console.log(err);
