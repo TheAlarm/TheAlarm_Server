@@ -72,6 +72,8 @@ paths:
   /sign-up:
     post:
       summary: 회원가입 API
+      tags:
+        - user
       requestBody:
         content:
           application/json:
@@ -86,35 +88,34 @@ paths:
                   type: string
               example:
                 email: larry@wooly.co.kr
-                password: 1111
+                password: '1111'
                 nickname: 동동이
       responses:
         '200':
           description: SIGN_UP_SUCCESS
           content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  isSuccess:
-                    type: boolean
-                  code:
-                    type: integer
-                  message:
-                    type: string
-                  result:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Auth'
+            schema:
+              type: object
+              properties:
+                isSuccess:
+                  type: boolean
+                code:
+                  type: integer
+                message:
+                  type: string
+                result:
+                  $ref: '#/components/schemas/Auth'
         '204':
-          description: EMPTY_BODY
+          $ref: '#/components/responses/EmptyValueError'
         '206':
-          description: INVALID_CONTENT
+          $ref: '#/components/responses/InvalidValueError'
         '500':
-          description: INTERNAL_SERVER_ERROR
+          $ref: '#/components/responses/InternalServerError'
   /sign-in:
     post:
       summary: 로그인 API
+      tags:
+        - user
       requestBody:
         content:
           application/json:
@@ -127,7 +128,7 @@ paths:
                   type: string
               example:
                 email: larry@wooly.co.kr
-                password: 1111
+                password: '1111'
       responses:
         '200':
           description: OK
@@ -143,16 +144,40 @@ paths:
                   message:
                     type: string
                   result:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Promise'
-        '400':
-          $ref: '#/components/responses/BadRequest'
+                    $ref: '#/components/schemas/Auth'
+        '204':
+          $ref: '#/components/responses/EmptyValueError'
         '500':
           $ref: '#/components/responses/InternalServerError'
-        '600':
-          $ref: '#/components/responses/DBError'
-        default:
+  /kakao:
+    post:
+      summary: 카카오 로그인 API
+      tags:
+        - user
+      parameters:
+        - in: header
+          name: kakaoAccessToken
+          type: string
+          required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  isSuccess:
+                    type: boolean
+                  code:
+                    type: integer
+                  message:
+                    type: string
+                  result:
+                    $ref: '#/components/schemas/Auth'
+        '204':
+          $ref: '#/components/responses/EmptyValueError'
+        '500':
           $ref: '#/components/responses/InternalServerError'
 components:
   securitySchemes:
@@ -233,3 +258,23 @@ components:
             isSuccess: false
             code: 600
             message: 데이터베이스 에러
+    EmptyValueError:
+      description: 값 미입력 오류
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            isSuccess: false
+            code: 204
+            message: 바디값 미입력 오류
+    InvalidValueError:
+      description: 유효하지 않은 값
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            isSuccess: false
+            code: 206
+            message: 유효하지 않은 값

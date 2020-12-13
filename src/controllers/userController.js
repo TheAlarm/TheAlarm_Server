@@ -17,7 +17,6 @@ const config = require("../../config/config");
  * response body: token, userInfoIdx
  */
 exports.signUp = async function (req, res) {
-  try {
     const { nickname, email, password } = req.body;
 
     //body 값 확인
@@ -47,7 +46,7 @@ exports.signUp = async function (req, res) {
           responseMessage.PASSWORD_RULE
         )
       );
-
+  try {
     // 이메일 중복 확인
     const getUserEmailResult = await query(
       `SELECT email FROM userInfo WHERE email = ?`,
@@ -182,17 +181,14 @@ exports.signIn = async function (req, res) {
 
 
 exports.kakao = async function (req, res) {
-  const REST_API_KEY = "a5bb3faff700411ecd5b1adc2c58e217";
-  const REDIRECT_URI = "http://localhost:3232/user/kakao-redirect";
-  console.log("들어오긴하는데");
 
   const options = {
     method: "GET",
     uri: "https://kauth.kakao.com/oauth/authorize",
     json: true,
-    qs: {
-      client_id: `${REST_API_KEY}`,
-      redirect_uri: `${REDIRECT_URI}`,
+    qs: {        
+      client_id: `${config.REST_API_KEY}`,
+      redirect_uri: `${config.REDIRECT_URI}`,
       response_type: "code",
     },
   };
@@ -221,25 +217,22 @@ exports.kakaoRedirect = async function (req, res) {
   const code = req.query.code;
   console.log("코드다");
   console.log(code);
-
-  const REST_API_KEY = "a5bb3faff700411ecd5b1adc2c58e217";
-  const REDIRECT_URI = "http://localhost:3232/user/kakao-redirect";
-
+  
   // 리퀘스트 모듈
   const options = {
     method: "post",
     uri: "https://kauth.kakao.com/oauth/token",
     body: {
       grant_type: "authorization_code",
-      client_id: REST_API_KEY,
-      redirect_uri: REDIRECT_URI,
+      client_id: config.REST_API_KEY,
+      redirect_uri: config.REDIRECT_URI,
       code: code,
     },
   };
 
-  await request(options, (error, response, body) => {
-    console.log(body);
-  });
+  // await request(options, (error, response, body) => {
+  //   console.log(body);
+  // });
 
   ///사용자 인증
   // await axios({
@@ -273,20 +266,24 @@ exports.kakaoRedirect = async function (req, res) {
  */
 
 exports.kakaoLogin = async function (req, res) {
+
+  const kakaoAccessToken = req.headers.kakaoaccesstoken
+
+  if (!kakaoAccessToken)
+  return res.send(
+    utils.successFalse(statusCode.NO_CONTENT, responseMessage.EMPTY_KAKAOTOKEN)
+  );
+
   try {
-    const kakaoAccessToken = req.headers.kakaoaccesstoken
     const options = {
       method: "GET",
       uri: "https://kapi.kakao.com/v2/user/me",
       json: true,
       headers: {
-        Authorization: `${kakaoAccessToken}`
+        Authorization: `Bearer ${kakaoAccessToken}`
       }
     };
-    try {
       const userInfo = await request(options);
-      //console.log(`${userInfo}`)
-      console.log(`${userInfo.kakao_account.email}`)
 
       const check = await query(
         `SELECT userIdx, nickname, email, password FROM userInfo WHERE email = ?`,
@@ -320,13 +317,18 @@ exports.kakaoLogin = async function (req, res) {
         } // 유효 시간은 365일
       );
       console.log(token);
-      return { token };
-    } catch (e) {
-      throw e;
-    }
-  } catch (e) {
-    console.log(e.message);
-    next(e);
+      return res.send(
+        utils.successTrue(
+          statusCode.OK,
+          responseMessage.KAKAO_LOGIN_SUCCESS, {token, userIdx}))
+
+  } catch (err) {
+    return res.send(
+      utils.successFalse(
+        statusCode.INTERNAL_SERVER_ERROR,
+        `Error: ${err.message}`
+      )
+    );
   }
 }
 
