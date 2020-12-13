@@ -50,6 +50,25 @@ paths:
       responses:
         '201':
           description: Create Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  isSuccess:
+                    type: boolean
+                  code:
+                    type: integer
+                  message:
+                    type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '600':
+          $ref: '#/components/responses/DBError'
+        default:
+          $ref: '#/components/responses/InternalServerError'
   /sign-up:
     post:
       summary: 회원가입 API
@@ -96,6 +115,19 @@ paths:
   /sign-in:
     post:
       summary: 로그인 API
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+              example:
+                email: larry@wooly.co.kr
+                password: 1111
       responses:
         '200':
           description: OK

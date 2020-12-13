@@ -4,10 +4,10 @@ const user = require('../controllers/userController');
 
 router.post("/sign-up", user.signUp);
 router.post("/sign-in", user.signIn);
-// router.get("/kakaoLogin", user.kakaoLogin);
-// router.get("/user/kakao", user.kakao);
-// router.get("/user/kakao-redirect", user.kakaoRedirect);
 
+// router.get("/user/kakao", user.kakao);                   // 인가코드, 토큰 만들기
+router.post("/kakao", user.kakaoLogin);                     // 토큰 받아서 회원가입 시키기
+router.get("/user/kakao-redirect", user.kakaoRedirect);     //리다리렉션 코드
 
 
 module.exports = router;
