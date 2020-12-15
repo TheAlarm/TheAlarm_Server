@@ -6,3 +6,5 @@
   $ref: "./signup.yaml"
 /sign-in:
   $ref: "./signin.yaml"
+/kakao:
+  $ref: "./kakao.yaml"

@@ -17,7 +17,6 @@ const config = require("../../config/config");
  * response body: token, userInfoIdx
  */
 exports.signUp = async function (req, res) {
-  try {
     const { nickname, email, password } = req.body;
 
     //body 값 확인
@@ -47,7 +46,7 @@ exports.signUp = async function (req, res) {
           responseMessage.PASSWORD_RULE
         )
       );
-
+  try {
     // 이메일 중복 확인
     const getUserEmailResult = await query(
       `SELECT email FROM userInfo WHERE email = ?`,
@@ -179,25 +178,27 @@ exports.signIn = async function (req, res) {
   }
 };
 
+
+
 exports.kakao = async function (req, res) {
-  const REST_API_KEY = "a989cd90aa0be7eac5f9315560bd8b75";
-  const REDIRECT_URI = "http://localhost:3232/user/kakao-redirect";
-  console.log("들어오긴하는데");
 
   const options = {
     method: "GET",
     uri: "https://kauth.kakao.com/oauth/authorize",
     json: true,
-    qs: {
-      client_id: `${REST_API_KEY}`,
-      redirect_uri: `${REDIRECT_URI}`,
+    qs: {        
+      client_id: `${config.REST_API_KEY}`,
+      redirect_uri: `${config.REDIRECT_URI}`,
       response_type: "code",
     },
   };
 
   const login = await request(options, function (err, response, body) {
     console.log("callback");
+    console.log(body);
   });
+
+  console.log(login)
 
   // await axios.get(`https://kauth.kakao.com/oauth/authorize?client_id=a989cd90aa0be7eac5f9315560bd8b75&redirect_uri=http://localhost:3232/user/kakao-redirect&response_type=code`,{
   //     headers: { 'content-type': 'application/x-www-form-urlencoded' },
@@ -209,33 +210,29 @@ exports.kakao = async function (req, res) {
   //       console.log("에러안나는데")
   //   })
   //   console.log("왜 악시오시가 안대?")
-  // https://kauth.kakao.com/oauth/authorize?client_id=a989cd90aa0be7eac5f9315560bd8b75&redirect_uri=http://localhost:3232/user/kakao-redirect&response_type=code
+  // https://kauth.kakao.com/oauth/authorize?client_id=a5bb3faff700411ecd5b1adc2c58e217&redirect_uri=http://localhost:3232/user/kakao-redirect&response_type=code
 };
 
 exports.kakaoRedirect = async function (req, res) {
   const code = req.query.code;
   console.log("코드다");
   console.log(code);
-
-  const REST_API_KEY = "a989cd90aa0be7eac5f9315560bd8b75";
-  const REDIRECT_URI = "http://localhost:3232/user/kakao-redirect";
-
+  
   // 리퀘스트 모듈
   const options = {
     method: "post",
     uri: "https://kauth.kakao.com/oauth/token",
     body: {
       grant_type: "authorization_code",
-      client_id: REST_API_KEY,
-      redirect_uri: REDIRECT_URI,
+      client_id: config.REST_API_KEY,
+      redirect_uri: config.REDIRECT_URI,
       code: code,
-      client_secret: "1TN0Nj02h6FY42Xqy51y4YyAPSbf9849",
     },
   };
 
-  await request(options, (error, response, body) => {
-    console.log(body);
-  });
+  // await request(options, (error, response, body) => {
+  //   console.log(body);
+  // });
 
   ///사용자 인증
   // await axios({
@@ -261,6 +258,79 @@ exports.kakaoRedirect = async function (req, res) {
   return res.send(utils.successTrue(200, `카카오 리다이렉트 성공`));
 };
 
+/**
+ * 2020.12.13
+ * 카카오 로그인 API
+ * /kakaoLogin
+ * request header : Bearer {ACCESS_TOKEN}
+ */
+
+exports.kakaoLogin = async function (req, res) {
+
+  const kakaoAccessToken = req.headers.kakaoaccesstoken
+
+  if (!kakaoAccessToken)
+  return res.send(
+    utils.successFalse(statusCode.NO_CONTENT, responseMessage.EMPTY_KAKAOTOKEN)
+  );
+
+  try {
+    const options = {
+      method: "GET",
+      uri: "https://kapi.kakao.com/v2/user/me",
+      json: true,
+      headers: {
+        Authorization: `Bearer ${kakaoAccessToken}`
+      }
+    };
+      const userInfo = await request(options);
+
+      const check = await query(
+        `SELECT userIdx, nickname, email, password FROM userInfo WHERE email = ?`,
+        [userInfo.kakao_account.email]
+      );
+      let userIdx = 0;
+  
+      if (check.length !== 1) {
+        // 새로운 유저 회원 가입
+        console.log('새로운 유저 회원 가입')
+        const signUpUserResult = await query(
+          `INSERT INTO userInfo (nickname, email, type) VALUES (?, ?, ?)`,
+          [userInfo.properties.nickname, userInfo.kakao_account.email, "kakao"]
+        );
+        userIdx = signUpUserResult.insertId;
+      } else {
+        // 기존 회원 로그인
+        console.log('기존 회원 로그인')
+        userIdx = check[0].userIdx;
+      }
+      // 토큰 생성
+      let token = await jwt.sign(
+        {
+          userIdx: userIdx,
+          id: userInfo.properties.nickname,
+        }, // 토큰의 내용(payload)
+        config.SECRET_ACCESS_KEY, // 비밀 키
+        {
+          expiresIn: "365d",
+          subject: "userInfo",
+        } // 유효 시간은 365일
+      );
+      console.log(token);
+      return res.send(
+        utils.successTrue(
+          statusCode.OK,
+          responseMessage.KAKAO_LOGIN_SUCCESS, {token, userIdx}))
+
+  } catch (err) {
+    return res.send(
+      utils.successFalse(
+        statusCode.INTERNAL_SERVER_ERROR,
+        `Error: ${err.message}`
+      )
+    );
+  }
+}
 
 exports.facebookLogin = async function(req, res) {
 

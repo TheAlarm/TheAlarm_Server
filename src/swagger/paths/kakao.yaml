@@ -1,19 +1,11 @@
 post:
-  summary: 로그인 API
+  summary: 카카오 로그인 API
   tags : [user]
-  requestBody:
-        content:
-          application/json:
-            schema:      # Request body contents
-              type: object
-              properties:
-                email:
-                  type: string
-                password:
-                  type: string
-              example:   # Sample object
-                email: larry@wooly.co.kr
-                password: '1111'
+  parameters:
+    - in: header
+      name : kakaoAccessToken
+      type : string
+      required : true
   responses:
     200:
       description: OK

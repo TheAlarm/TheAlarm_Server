@@ -90,3 +90,23 @@ components:
             isSuccess: false
             code: 600
             message: 데이터베이스 에러
+    EmptyValueError:
+      description: 값 미입력 오류
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            isSuccess: false
+            code: 204
+            message: 바디값 미입력 오류
+    InvalidValueError:
+      description: 유효하지 않은 값
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            isSuccess: false
+            code: 206
+            message: 유효하지 않은 값

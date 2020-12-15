@@ -1,5 +1,6 @@
 post:
   summary: 회원가입 API
+  tags : [user]
   requestBody:
         content:
           application/json:
@@ -14,14 +15,13 @@ post:
                   type: string
               example:   # Sample object
                 email: larry@wooly.co.kr
-                password: 1111
+                password: '1111'
                 nickname: 동동이
 
   responses:
     200:
       description: SIGN_UP_SUCCESS
       content:
-        application/json:
           schema:
             type: object
             properties:
@@ -32,12 +32,10 @@ post:
               "message":
                 type: string
               "result":
-                type: array
-                items:
-                  $ref: "../openapi.yaml#/components/schemas/Auth"
+                $ref: "../openapi.yaml#/components/schemas/Auth"
     204:
-        description: "EMPTY_BODY"
+        $ref: "../openapi.yaml#/components/responses/EmptyValueError"
     206:
-        description: "INVALID_CONTENT"
+        $ref: "../openapi.yaml#/components/responses/InvalidValueError"
     500:
-        description: "INTERNAL_SERVER_ERROR"
+        $ref: "../openapi.yaml#/components/responses/InternalServerError"
