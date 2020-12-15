@@ -260,3 +260,12 @@ exports.kakaoRedirect = async function (req, res) {
 
   return res.send(utils.successTrue(200, `카카오 리다이렉트 성공`));
 };
+
+
+exports.facebookLogin = async function(req, res) {
+
+};
+
+exports.facebookCallback = async function(req, res) {
+  
+};
