@@ -7,7 +7,7 @@ info:
     name: MIT
 servers:
   - description: dev server
-    url: 'http://localhost:3232'
+    url: 'https://wooly.co.kr'
 paths:
   /app/promise-list:
     get:
