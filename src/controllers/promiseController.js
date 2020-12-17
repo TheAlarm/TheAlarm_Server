@@ -28,7 +28,10 @@ exports.getAllPromise = async function (req, res) {
 
 /**
  * 
- * @TODO userIdx 받아와서 넘겨야 함 (수민)
+ * [POST] /app/promise
+ * @author ChoSooMin
+ * @header token
+ * @body promise, public
  */
 exports.postPromise = async function (req, res) {
     console.log("다짐 쓰기 API");
@@ -38,12 +41,14 @@ exports.postPromise = async function (req, res) {
             promise,
             public
         } = req.body;
+        const userIdx = req.verifiedToken;
+        console.log("token verified :" + userIdx);
 
         const postPromiseQuery = `INSERT INTO promise(promise, createdAt, public, userIdx) VALUES (?, ?, ?, ?)`;
         const date = Date.now();
         const curTime = moment(date).format('YYYY-MM-DD HH:mm:ss'); // 현재 시간을 등록시간으로 보낸다.
 
-        const userIdx = 1;
+        // const userIdx = 1;
 
         const result = await query(postPromiseQuery, [promise, curTime, public, userIdx]);
 
