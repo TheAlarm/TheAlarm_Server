@@ -11,7 +11,14 @@ servers:
 paths:
   /app/promise-list:
     get:
-      summary: Get all promises
+      summary: 다짐 목록 API
+      tags:
+        - promise
+      parameters:
+        - in: header
+          name: x-access-token
+          type: string
+          required: true
       responses:
         '200':
           description: OK
@@ -30,23 +37,51 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Promise'
+              example:
+                isSuccess: true
+                code: 200
+                message: 다짐 목록 조회
+                result:
+                  - promiseIdx: 17
+                    promise: promise hihi
+                    createdAt: '2020-12-17T12:01:00.000Z'
+                    public: ok
+                    userIdx: 5
+                  - promiseIdx: 18
+                    promise: hihi
+                    createdAt: '2020-12-17T12:02:22.000Z'
+                    public: ok
+                    userIdx: 5
         '400':
           $ref: '#/components/responses/BadRequest'
         '500':
           $ref: '#/components/responses/InternalServerError'
         '600':
           $ref: '#/components/responses/DBError'
-        default:
-          $ref: '#/components/responses/InternalServerError'
   /app/promise:
     post:
-      summary: Create promise
+      summary: 다짐 생성 API
+      tags:
+        - promise
+      parameters:
+        - in: header
+          name: x-access-token
+          type: string
+          required: true
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Promise'
+              type: object
+              properties:
+                promise:
+                  type: string
+                public:
+                  type: string
+            example:
+              promise: 오늘은 힘찬 하루를 보내야지
+              public: ok
       responses:
         '201':
           description: Create Success
@@ -61,14 +96,16 @@ paths:
                     type: integer
                   message:
                     type: string
+              example:
+                isSuccess: true
+                code: 201
+                message: 다짐 작성 성공
         '400':
           $ref: '#/components/responses/BadRequest'
         '500':
           $ref: '#/components/responses/InternalServerError'
         '600':
           $ref: '#/components/responses/DBError'
-        default:
-          $ref: '#/components/responses/InternalServerError'
   /sign-up:
     post:
       summary: 회원가입 API

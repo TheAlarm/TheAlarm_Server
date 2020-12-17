@@ -1,12 +1,25 @@
-# @TODO requestBody 변경 필요
 post:
-  summary: Create promise
+  summary: 다짐 생성 API
+  tags: [promise]
+  parameters:
+    - in: header
+      name: x-access-token
+      type: string
+      required: true
   requestBody:
     required: true
     content:
       application/json:
         schema:
-          $ref: "../openapi.yaml#/components/schemas/Promise"
+          type: object
+          properties:
+            promise:
+              type: string
+            public:
+              type: string
+        example:
+          promise: "오늘은 힘찬 하루를 보내야지"
+          public: "ok"
   responses:
     201:
       description: Create Success
@@ -21,11 +34,13 @@ post:
                 type: integer
               "message":
                 type: string
+          example:
+            isSuccess: true
+            code: 201
+            message: 다짐 작성 성공
     400:
       $ref: "../openapi.yaml#/components/responses/BadRequest"
     600:
       $ref: "../openapi.yaml#/components/responses/DBError"
     500:
-      $ref: "../openapi.yaml#/components/responses/InternalServerError"
-    default:
       $ref: "../openapi.yaml#/components/responses/InternalServerError"
