@@ -6,7 +6,10 @@
     "api-docs": "swagger-cli bundle src/swagger/openapi.yaml --outfile src/swagger/build.yaml --type yaml",
     "start": "node ./bin/www",
     "dev": "NODE_ENV=development node ./bin/www",
-    "prod": "NODE_ENV=production node ./bin/www"
+    "prod": "NODE_ENV=production node ./bin/www",
+    "prestart": "npm run api-docs",
+    "predev": "npm run api-docs",
+    "preprod": "npm run api-docs"
   },
   "dependencies": {
     "axios": "^0.21.0",
