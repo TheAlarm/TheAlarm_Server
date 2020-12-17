@@ -41,14 +41,12 @@ exports.postPromise = async function (req, res) {
             promise,
             public
         } = req.body;
-        const userIdx = req.verifiedToken;
-        console.log("token verified :" + userIdx);
+        
+        const userIdx = req.verifiedToken.userIdx; // token으로부터 userIdx 받아오기
 
         const postPromiseQuery = `INSERT INTO promise(promise, createdAt, public, userIdx) VALUES (?, ?, ?, ?)`;
         const date = Date.now();
         const curTime = moment(date).format('YYYY-MM-DD HH:mm:ss'); // 현재 시간을 등록시간으로 보낸다.
-
-        // const userIdx = 1;
 
         const result = await query(postPromiseQuery, [promise, curTime, public, userIdx]);
 
