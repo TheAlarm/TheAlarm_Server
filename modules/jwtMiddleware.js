@@ -3,6 +3,8 @@ const secret_config = require('../config/config');
 const jwtMiddleware = (req, res, next) => {
     // read the token from header or url
     const token = req.headers['x-access-token'] || req.query.token;
+    console.log(token);
+
     // token does not exist
     if(!token) {
         return res.status(200).json({
@@ -15,7 +17,7 @@ const jwtMiddleware = (req, res, next) => {
     // create a promise that decodes the token
     const p = new Promise(
         (resolve, reject) => {
-            jwt.verify(token, secret_config.SECRET_CONFIG , (err, verifiedToken) => {
+            jwt.verify(token, secret_config.SECRET_ACCESS_KEY , (err, verifiedToken) => {
                 if(err) reject(err);
                 resolve(verifiedToken)
             })
