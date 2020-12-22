@@ -8,7 +8,8 @@ const responseMessage = require("../../modules/responseMessage");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const config = require("../../config/config");
-
+const facebookCredentials = require('../../config/loginKey').facebook;
+const queryString = require('querystring');
 /**
  * 2020.12.06
  * 회원가입 API
@@ -332,10 +333,54 @@ exports.kakaoLogin = async function (req, res) {
   }
 }
 
-exports.facebookLogin = async function(req, res) {
-
+// facebook Login
+exports.route = function (req, res) {
+  
+  const result = axios(`https://www.facebook.com/v9.0/dialog/oauth?client_id=${facebookCredentials.clientId}&redirect_uri=${encodeURIComponent('http://localhost:3232/user/facebook-redirect')}`);
+  res.send(result);
+  // res.send(`
+  //   <html>
+  //     <body>
+  //       <a href="https://www.facebook.com/v9.0/dialog/oauth?client_id=${facebookCredentials.clientId}&redirect_uri=${encodeURIComponent('http://localhost:3232/user/facebook-redirect')}">
+  //         Log In With Facebook
+  //       </a>
+  //     </body>
+  //   </html>
+  // `);
 };
 
-exports.facebookCallback = async function(req, res) {
-  
+exports.facebookRedirect = async function (req, res) {
+  try {
+    const authCode = req.query.code;
+
+    const accessTokenUrl = 'https://graph.facebook.com/v9.0/oauth/access_token?' +
+      `client_id=${facebookCredentials.clientId}&` +
+      `client_secret=${facebookCredentials.secretId}&` +
+      `redirect_uri=${encodeURIComponent('http://localhost:3232/user/facebook-redirect')}&` +
+      `code=${encodeURIComponent(authCode)}`;
+
+    const accessToken = await axios.get(accessTokenUrl).then(res => res.data['access_token']);
+    console.log(`Access Token = ${accessToken}`);
+    
+    res.redirect(`/me?accessToken=${encodeURIComponent(accessToken)}`);
+  } catch (err) {
+    console.log(err);
+
+    return res.status(500).json({ message: err.response.data || err.message });
+  }
+};
+
+exports.me = async function (req, res) {
+  try {
+    const accessToken = req.query.accessToken;
+
+    const data = await axios.get(`https://graph.facebook.com/me?access_token=${encodeURIComponent(accessToken)}`).then(res => res.data);
+
+    return res.send(`<html>
+    <body>Your name is ${data.name}</body>
+  </html>`);
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ message: err.response.data || err.message });
+  }
 };
