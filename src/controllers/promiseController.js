@@ -26,24 +26,38 @@ exports.getAllPromise = async function (req, res) {
     }
 };
 
+/**
+ * [GET] /app/promise-list/:date/:page
+ * @author ChoSooMin
+ */
 exports.getDatePromiseList = async function (req, res) {
     console.log("날짜별 다짐 목록 조회 API");
 
     try {
         const {
-            date
+            date, page
         } = req.params;
 
-        if (!date) {
-            res.status(statusCode.BAD_REQUEST).send(utils.successFalse(statusCode.BAD_REQUEST, "날짜를 입력해주세요"));
+        if (!date || !page) {
+            res.status(statusCode.BAD_REQUEST).send(utils.successFalse(statusCode.BAD_REQUEST, "날짜와 페이징 인덱스를 입력해주세요"));
         }
 
-        const getDatePromiseListQuery = `SELECT * FROM promise WHERE DATE(createdAt) = ?`;
+        if (page == 0) {
+            const getDatePromiseListQuery = `SELECT * FROM promise WHERE DATE(createdAt) = ?`;
 
-        const result = await query(getDatePromiseListQuery, [date]);
-        const json = utils.successTrue(200, "날짜별 다짐 목록 조회", result);
+            const result = await query(getDatePromiseListQuery, [date]);
+            const json = utils.successTrue(200, "날짜별 다짐 목록 전체 조회", result);
 
-        return res.status(statusCode.OK).send(json);
+            return res.status(statusCode.OK).send(json);
+        }
+        else { // 페이징 처리
+            const getDatePromiseListQuery = `SELECT * FROM promise WHERE DATE(createdAt) = ? ORDER BY promiseIdx LIMIT 10 OFFSET ?`;
+
+            const result = await query(getDatePromiseListQuery, [date, (page - 1) * 10]);
+            const json = utils.successTrue(200, "날짜별 다짐 목록 전체 조회(페이징)", result);
+
+            return res.status(statusCode.OK).send(json);
+        }
     } catch (err) {
         console.log(err);
 
