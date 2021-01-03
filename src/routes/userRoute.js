@@ -11,8 +11,6 @@ router.post("/sign-in", user.signIn);
 router.post("/kakao", user.kakaoLogin);                     // 토큰 받아서 회원가입 시키기
 router.get("/user/kakao-redirect", user.kakaoRedirect);     //리다리렉션 코드
 
-router.get('/user/facebook', user.route);
-router.get('/user/facebook-redirect', user.facebookRedirect);
-router.get('/me', user.me);
+router.post('/user/facebook', user.facebook);
 
 module.exports = router;
