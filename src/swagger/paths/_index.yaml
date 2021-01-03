@@ -1,7 +1,7 @@
 /app/promise-list:
   $ref: "./promise-list.yaml"
-/app/promise-list/{date}:
-  $ref: "./promise-list-date.yaml"
+/app/promise-list/{date}/{page}:
+  $ref: "./promise-list-date-page.yaml"
 /app/promise:
   $ref: "./promise.yaml"
 /sign-up:
