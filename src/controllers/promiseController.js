@@ -13,12 +13,36 @@ exports.getAllPromise = async function (req, res) {
     console.log("다짐목록 조회 API");
 
     try {
-        const getAllPromiseQuery = `SELECT * FROM promise`;
-        const result = await query(getAllPromiseQuery);
+        const {
+            date, page
+        } = req.query;
 
-        const json = utils.successTrue(200, "다짐목록 조회", result);
+        if (!date && !page) { // 둘 다 없으면 다짐 목록 전체 조회
+            const getAllPromiseQuery = `SELECT * FROM promise`;
+            const result = await query(getAllPromiseQuery);
 
-        return res.status(statusCode.OK).send(json);
+            const json = utils.successTrue(200, "다짐목록 조회", result);
+
+            return res.status(statusCode.OK).send(json);
+        }
+        else { // 둘 중 하나 있을 경우(date만 있을 경우)
+            if (!page || page == 0) { // page 쿼리를 입력하지 않거나 0으로 입력하면 전체 목록을 보여준다. (페이징 해서 보내지 않음) -> 날짜만 있을 경우
+                const getDatePromiseListQuery = `SELECT * FROM promise WHERE DATE(createdAt) = ?`;
+    
+                const result = await query(getDatePromiseListQuery, [date]);
+                const json = utils.successTrue(statusCode.OK, "날짜별 다짐 목록 전체 조회", result);
+
+                return res.status(statusCode.OK).send(json);
+            }
+            else { // 페이징 처리
+                const getDatePromiseListQuery = `SELECT * FROM promise WHERE DATE(createdAt) = ? ORDER BY promiseIdx LIMIT ? OFFSET ?`;
+    
+                const result = await query(getDatePromiseListQuery, [date, 10, (page - 1) * 10]);
+                const json = utils.successTrue(statusCode.OK, "날짜별 다짐 목록 전체 조회(페이징)", result);
+
+                return res.status(statusCode.OK).send(json);
+            }
+        }
     } catch (err) {
         console.log(err);
         
@@ -36,7 +60,7 @@ exports.getDatePromiseList = async function (req, res) {
     try {
         const {
             date, page
-        } = req.params;
+        } = req.query;
 
         if (!date || !page) {
             res.status(statusCode.BAD_REQUEST).send(utils.successFalse(statusCode.BAD_REQUEST, "날짜와 페이징 인덱스를 입력해주세요"));

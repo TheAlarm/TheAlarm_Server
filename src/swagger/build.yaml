@@ -14,6 +14,21 @@ paths:
       summary: 다짐 목록 API
       tags:
         - promise
+      parameters:
+        - in: query
+          name: date
+          required: false
+          schema:
+            type: string
+            example: '2020-12-17'
+          description: '조회할 날짜(입력하지 않을 경우, 전체 목록 조회)'
+        - in: query
+          name: page
+          required: false
+          schema:
+            type: integer
+            example: 1
+          description: '페이징 인덱스(0이거나 입력하지 않을 경우, 특정 날짜의 전체 목록 조회)'
       responses:
         '200':
           description: OK
@@ -50,63 +65,6 @@ paths:
                   - promiseIdx: 19
                     promise: 알찬 하루를 보내자
                     createdAt: '2020-12-24T10:30:39.000Z'
-                    public: ok
-                    userIdx: 5
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-        '600':
-          $ref: '#/components/responses/DBError'
-  '/app/promise-list/{date}/{page}':
-    get:
-      summary: 날짜별 다짐 목록 API
-      tags:
-        - promise
-      parameters:
-        - in: path
-          name: date
-          required: true
-          schema:
-            type: string
-          description: 조회할 날짜
-        - in: path
-          name: page
-          required: true
-          schema:
-            type: integer
-          description: '페이징 인덱스(0일 경우, 전체 목록 조회)'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  isSuccess:
-                    type: boolean
-                  code:
-                    type: integer
-                  message:
-                    type: string
-                  result:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Promise'
-              example:
-                isSuccess: true
-                code: 200
-                message: 날짜별 다짐 목록 전체 조회
-                result:
-                  - promiseIdx: 17
-                    promise: promise hihi
-                    createdAt: '2020-12-17T12:01:00.000Z'
-                    public: ok
-                    userIdx: 5
-                  - promiseIdx: 18
-                    promise: hihi
-                    createdAt: '2020-12-17T12:02:22.000Z'
                     public: ok
                     userIdx: 5
         '400':
