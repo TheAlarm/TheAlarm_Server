@@ -10,9 +10,9 @@ module.exports = {
     KAKAO_LOGIN_SUCCESS: "카카오 로그인 성공",
     POSSIBLE_NICKNAME: "사용 가능한 닉네임입니다.",
 
-    EMPTY_EMAIL: "이메일을 입력해주세요.",
-    EMPTY_PASSWORD: "비밀번호를 입력해주세요.",
-    WRONG_PASSWORD: "패스워드가 잘못 되었습니다.",
+    EMPTY_EMAIL: "이메일을 확인해 주세요.",
+    EMPTY_PASSWORD: "비밀번호를 확인해 주세요.",
+    WRONG_PASSWORD: "이메일 또는 비밀번호를 확인해 주세요",
     EMPTY_NICKNAME: "닉네임을 입력해주세요.",
     PASSWORD_RULE: "비밀번호는 4~10자리를 입력해주세요.",
     DUPLICATE_EMAIL: "이미 가입된 이메일 입니다.",

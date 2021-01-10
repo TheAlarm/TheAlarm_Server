@@ -199,6 +199,8 @@ paths:
                     $ref: '#/components/schemas/Auth'
         '204':
           $ref: '#/components/responses/EmptyValueError'
+        '206':
+          $ref: '#/components/responses/InvalidValueError'
         '500':
           $ref: '#/components/responses/InternalServerError'
   /kakao:
@@ -206,11 +208,15 @@ paths:
       summary: 카카오 로그인 API
       tags:
         - user
-      parameters:
-        - in: header
-          name: kakaoAccessToken
-          type: string
-          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                kakaoAccessToken:
+                  type: string
       responses:
         '200':
           description: OK
@@ -263,6 +269,8 @@ components:
       required:
         - token
         - userIdx
+        - nickname
+        - profile
       properties:
         token:
           type: string
@@ -270,6 +278,12 @@ components:
         userIdx:
           type: integer
           description: 유저 인덱스
+        nickname:
+          type: string
+          description: 유저 닉네임
+        profile:
+          type: string
+          description: 유저 프로필 사진
     Error:
       type: object
       properties:
@@ -311,7 +325,7 @@ components:
             code: 600
             message: 데이터베이스 에러
     EmptyValueError:
-      description: 값 미입력 오류
+      description: 바디값 미입력 오류
       content:
         application/json:
           schema:

@@ -1,11 +1,15 @@
 post:
   summary: 카카오 로그인 API
   tags : [user]
-  parameters:
-    - in: header
-      name : kakaoAccessToken
-      type : string
-      required : true
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            kakaoAccessToken:
+              type: string
   responses:
     200:
       description: OK

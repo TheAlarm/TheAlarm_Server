@@ -105,7 +105,7 @@ exports.signUp = async function (req, res) {
  * 로그인 API
  * /sign-in
  * request body : email, password
- * response body: token, userInfoIdx
+ * response body: token, userInfoIdx, nickname, profile
  */
 exports.signIn = async function (req, res) {
   try {
@@ -127,10 +127,13 @@ exports.signIn = async function (req, res) {
 
       // 로그인 확인
     const getUserResult = await query(
-      `SELECT userIdx, nickname, email, password FROM userInfo WHERE email = ?`,
+      `SELECT userIdx, nickname, email, password, profile FROM userInfo WHERE email = ?`,
       [email]
     );
     const userIdx = getUserResult[0].userIdx
+    const nickname = getUserResult[0].nickname
+    const profile = getUserResult[0].profile
+
     let token = await jwt.sign(
       {
         userIdx: userIdx,
@@ -159,12 +162,12 @@ exports.signIn = async function (req, res) {
           return res.send(
             utils.successTrue(
               statusCode.OK,
-              responseMessage.SIGN_IN_SUCCESS, {token, userIdx}))
+              responseMessage.SIGN_IN_SUCCESS, {token, userIdx, nickname, profile}))
         }
       } else {
         return res.send(
           utils.successFalse(
-            statusCode.NO_CONTENT,
+            statusCode.INVALID_CONTENT,
             responseMessage.NO_EXIST_USER)
         );
       }
@@ -268,7 +271,9 @@ exports.kakaoRedirect = async function (req, res) {
 
 exports.kakaoLogin = async function (req, res) {
 
-  const kakaoAccessToken = req.headers.kakaoaccesstoken
+  const kakaoAccessToken = req.body.kakaoAccessToken
+  const email =  req.body.email
+  const profile = req.body.profile
 
   if (!kakaoAccessToken)
   return res.send(
@@ -291,14 +296,14 @@ exports.kakaoLogin = async function (req, res) {
         [userInfo.kakao_account.email]
       );
       let userIdx = 0;
-  
       if (check.length !== 1) {
         // 새로운 유저 회원 가입
         console.log('새로운 유저 회원 가입')
         const signUpUserResult = await query(
-          `INSERT INTO userInfo (nickname, email, type) VALUES (?, ?, ?)`,
-          [userInfo.properties.nickname, userInfo.kakao_account.email, "kakao"]
+          `INSERT INTO userInfo (nickname, email, profile, type) VALUES (?, ?, ?, 'kakao')`,
+          [userInfo.properties.nickname, userInfo.kakao_account.email, userInfo.properties.profile_image]
         );
+
         userIdx = signUpUserResult.insertId;
       } else {
         // 기존 회원 로그인
