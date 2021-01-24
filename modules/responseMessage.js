@@ -19,5 +19,9 @@ module.exports = {
     NO_EXIST_USER: "존재하지 않는 회원입니다. ",
     EMPTY_KAKAOTOKEN: "카카오 토큰값을 입력해주세요",
 
+    EMPTY_FBTOKEN: "페이스북 토큰값을 입력해주세요",
+    INVALID_TOKEN: "잘못된 토큰", 
+    FACEBOOK_LOGIN_SUCCESS: "페이스북 로그인 성공"
+
 
 }

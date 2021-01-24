@@ -339,9 +339,48 @@ exports.kakaoLogin = async function (req, res) {
 }
 
 exports.facebook = async function (req, res) {
-  const { id, email, name } = req.body;
-  const type = "facebook";
+  console.log('페이스북 로그인');
+  try {
+    const {email, name, profile} = req.decoded;
 
-  // 페이스북 고유 id로 회원 아이디 찾기
-  const searchId = `SELECT * FROM userInfo WHERE salt = ?`;
+    //   
+    const isExistUser = await query(`SELECT userIdx, nickname, email, password FROM userInfo WHERE email = ?`, [email]);
+    let userIdx = 0;
+
+    if (isExistUser.length !== 1) {
+      // 새로운 유저 회원 가입
+      console.log('새로운 유저 회원 가입(페북)');
+      const signUpFbResult = await query(`INSERT INTO userInfo (nickname, email, profile, type) VALUES (?, ?, ?, ?)`, [name, email, profile, "facebook"]);
+
+      userIdx = signUpFbResult.insertId;
+    } 
+    else {
+      // 기존 회원 로그인
+      console.log('기존 회원 로그인(페북)');
+      userIdx = isExistUser[0].userIdx;
+    }
+
+    // 토큰 생성
+    let token = await jwt.sign(
+      {
+        userIdx: userIdx,
+        id: name,
+      }, // 토큰의 내용(payload)
+      config.SECRET_ACCESS_KEY, // 비밀 키
+      {
+        expiresIn: "365d",
+        subject: "userInfo",
+      } // 유효 시간은 365일
+    );
+
+    console.log(token);
+    return res.send(
+      utils.successTrue(
+        statusCode.OK,
+        responseMessage.FACEBOOK_LOGIN_SUCCESS, {token, userIdx}))
+  } catch(err) {
+    console.log(err);
+    
+    return res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(statusCode.INTERNAL_SERVER_ERROR, responseMessage.INTERNAL_SERVER_ERROR));
+  }
 };
