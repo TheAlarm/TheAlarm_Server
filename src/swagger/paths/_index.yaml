@@ -8,3 +8,5 @@
   $ref: "./signin.yaml"
 /kakao:
   $ref: "./kakao.yaml"
+/facebook:
+  $ref: "./facebook.yaml"

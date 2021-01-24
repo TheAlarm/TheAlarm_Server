@@ -240,6 +240,47 @@ paths:
           $ref: '#/components/responses/EmptyValueError'
         '500':
           $ref: '#/components/responses/InternalServerError'
+  /facebook:
+    post:
+      summary: 페이스북 로그인 API
+      tags:
+        - user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fbAccessToken:
+                  type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  isSuccess:
+                    type: boolean
+                  code:
+                    type: integer
+                  message:
+                    type: string
+                  result:
+                    $ref: '#/components/schemas/Auth'
+              example:
+                isSuccess: true
+                code: 200
+                message: 페이스북 로그인 성공
+                result:
+                  - token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWR4IjoxNywiaWQiOiLsobDsiJjrr7wiLCJpYXQiOjE2MTE0OTYzNzcsImV4cCI6MTY0MzAzMjM3Nywic3ViIjoidXNlckluZm8ifQ.nCnzbU4LnyVyhOSD5eO2_-wHIAk94dWRME7EelEZ790
+                    userIdx: 17
+        '204':
+          $ref: '#/components/responses/EmptyValueError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 components:
   securitySchemes:
     BearerAuth:
