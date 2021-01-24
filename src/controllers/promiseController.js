@@ -35,7 +35,7 @@ exports.getAllPromise = async function (req, res) {
                 return res.status(statusCode.OK).send(json);
             }
             else { // 페이징 처리
-                const getDatePromiseListQuery = `SELECT userInfo.profile, userInfo.nickname, promise.promiseIdx, promise.createdAt, promise.promise, promise.public FROM promise WHERE DATE(promise.createdAt) = ? ORDER BY promise.promiseIdx LIMIT ? OFFSET ?`;
+                const getDatePromiseListQuery = `SELECT userInfo.profile, userInfo.nickname, promise.promiseIdx, promise.createdAt, promise.promise, promise.public FROM promise JOIN userInfo ON promise.userIdx = userInfo.userIdx WHERE DATE(promise.createdAt) = ? ORDER BY promise.promiseIdx LIMIT ? OFFSET ?`;
     
                 const result = await query(getDatePromiseListQuery, [date, 10, (page - 1) * 10]);
                 const json = utils.successTrue(statusCode.OK, "날짜별 다짐 목록 전체 조회(페이징)", result);
@@ -75,7 +75,7 @@ exports.getDatePromiseList = async function (req, res) {
             return res.status(statusCode.OK).send(json);
         }
         else { // 페이징 처리
-            const getDatePromiseListQuery = `SELECT userInfo.profile, userInfo.nickname, promise.promiseIdx, promise.createdAt, promise.promise, promise.public FROM promise WHERE DATE(promise.createdAt) = ? ORDER BY promise.promiseIdx LIMIT ? OFFSET ?`;
+            const getDatePromiseListQuery = `SELECT userInfo.profile, userInfo.nickname, promise.promiseIdx, promise.createdAt, promise.promise, promise.public FROM promise JOIN userInfo ON promise.userIdx = userInfo.userIdx WHERE DATE(promise.createdAt) = ? ORDER BY promise.promiseIdx LIMIT ? OFFSET ?`;
 
             const result = await query(getDatePromiseListQuery, [date, (page - 1) * 10]);
             const json = utils.successTrue(200, "날짜별 다짐 목록 전체 조회(페이징)", result);
