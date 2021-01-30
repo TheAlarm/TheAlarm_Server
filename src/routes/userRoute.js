@@ -3,7 +3,7 @@ const router = express.Router();
 const user = require('../controllers/userController');
 const fb = require('../../modules/facebook-jwt');
 // profile 사진 변경 (multer)
-//const upload = require('../../config/multer');
+const upload = require('../../config/multer');
 const jwtMiddleware = require('../../modules/jwtMiddleware');
 
 router.post("/sign-up", user.signUp);
@@ -16,6 +16,6 @@ router.get("/user/kakao-redirect", user.kakaoRedirect);     //리다리렉션 �
 router.post('/facebook', fb, user.facebook);
 router.patch("/user", jwtMiddleware, user.profileEdit);
 
-//router.put('/userInfo/editProfile', jwtMiddleware, upload.single('profile'), user.editProfile);
+router.put('/userInfo/editProfile', jwtMiddleware, upload.single('profile'), user.editProfile);
 
 module.exports = router;
