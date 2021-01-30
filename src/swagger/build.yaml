@@ -348,6 +348,7 @@ paths:
         - in: formData
           name: profile
           type: file
+          required: true
           description: 변경할 프로필 이미지
       responses:
         '200':

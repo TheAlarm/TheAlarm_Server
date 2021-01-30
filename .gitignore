@@ -4,6 +4,8 @@
 
 /config
 
+package-lock.json
+
 ### dotenv ###
 .env
 
