@@ -12,3 +12,5 @@
   $ref: "./facebook.yaml"
 /app/my-promise-list:
   $ref: "./my-promise-list.yaml"
+/userInfo/editProfile:
+  $ref: "./editProfile.yaml"

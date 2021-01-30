@@ -10,6 +10,7 @@ const jwt = require("jsonwebtoken");
 const config = require("../../config/config");
 const facebookCredentials = require('../../config/loginKey').facebook;
 const queryString = require('querystring');
+
 /**
  * 2020.12.06
  * 회원가입 API
@@ -381,6 +382,37 @@ exports.facebook = async function (req, res) {
   } catch(err) {
     console.log(err);
     
+    return res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(statusCode.INTERNAL_SERVER_ERROR, responseMessage.INTERNAL_SERVER_ERROR));
+  }
+};
+
+exports.editProfile = async function (req, res) {
+  console.log(`프로필 이미지 변경`);
+
+  try {
+    const userIdx = req.verifiedToken.userIdx; // token으로부터 userIdx 받아오기
+    var profileImg = ``;
+
+    if (req.file) {
+      console.log(req.file.location);
+      profileImg = req.file.location;
+    }
+    
+    if (profileImg == ``) {
+      return res.status(statusCode.NO_CONTENT).send(utils.successFalse(statusCode.NO_CONTENT, '프로필 사진을 선택해주세요'));
+    }
+
+    const editProfileQuery = `UPDATE userInfo SET profile = ? WHERE userIdx = ?`;
+    const result = await query(editProfileQuery, [profileImg, userIdx]);
+
+    if (!result) {
+      return res.status(statusCode.BAD_REQUEST).send(utils.successFalse(statusCode.BAD_REQUEST, '프로필 사진 변경 실패'));
+  }
+
+  return res.status(statusCode.OK).send(utils.successTrue(statusCode.OK, `프로필 사진 변경 성공`));
+  } catch (err) {
+    console.log(err);
+
     return res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(statusCode.INTERNAL_SERVER_ERROR, responseMessage.INTERNAL_SERVER_ERROR));
   }
 };

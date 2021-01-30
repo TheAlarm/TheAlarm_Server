@@ -1,0 +1,37 @@
+put:
+  summary: 프로필 사진 변경 API
+  tags: [user]
+  parameters:
+    - in: header
+      name: x-access-token
+      type: string
+      required: true
+    - in: formData
+      name: profile
+      type: file
+      required: true
+      description: 변경할 프로필 이미지
+  responses:
+    200:
+      description: OK
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              "isSuccess":
+                type: boolean
+              "code":
+                type: integer
+              "message":
+                type: string
+          example:
+            isSuccess: true
+            code: 200
+            message: 프로필 사진 변경 성공
+    400:
+      $ref: "../openapi.yaml#/components/responses/BadRequest"
+    600:
+      $ref: "../openapi.yaml#/components/responses/DBError"
+    500:
+      $ref: "../openapi.yaml#/components/responses/InternalServerError"

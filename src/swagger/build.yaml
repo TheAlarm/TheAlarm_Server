@@ -335,6 +335,44 @@ paths:
           $ref: '#/components/responses/InternalServerError'
         '600':
           $ref: '#/components/responses/DBError'
+  /userInfo/editProfile:
+    put:
+      summary: 프로필 사진 변경 API
+      tags:
+        - user
+      parameters:
+        - in: header
+          name: x-access-token
+          type: string
+          required: true
+        - in: formData
+          name: profile
+          type: file
+          description: 변경할 프로필 이미지
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  isSuccess:
+                    type: boolean
+                  code:
+                    type: integer
+                  message:
+                    type: string
+              example:
+                isSuccess: true
+                code: 200
+                message: 프로필 사진 변경 성공
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+        '600':
+          $ref: '#/components/responses/DBError'
 components:
   securitySchemes:
     BearerAuth:
