@@ -1,0 +1,52 @@
+get:
+  summary: 내 다짐 목록 API
+  tags: [promise]
+  parameters:
+    - in: header
+      name: x-access-token
+      type: string
+      required: true
+  responses:
+    200:
+      description: OK
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              "isSuccess":
+                type: boolean
+              "code":
+                type: integer
+              "message":
+                type: string
+              "result":
+                type: array
+                items:
+                  $ref: "../openapi.yaml#/components/schemas/Promise"
+          example:
+            isSuccess: true
+            code: 200
+            message: 내 다짐 목록 조회
+            result:
+              - promiseIdx: 41
+                promise: "오늘은 힘찬 하루를 보내야지"
+                createdAt: "2021-01-30T07:21:44.000Z"
+                public: 1
+                userIdx: 20
+              - promiseIdx: 42
+                promise: "알고리즘 열심히 풀자"
+                createdAt: "2021-01-30T07:21:52.000Z"
+                public: 1
+                userIdx: 20
+              - promiseIdx: 43
+                promise: "오늘은 힘찬 하루를 보내야지"
+                createdAt: "2021-01-30T07:21:58.000Z"
+                public: 0
+                userIdx: 20
+    400:
+      $ref: "../openapi.yaml#/components/responses/BadRequest"
+    600:
+      $ref: "../openapi.yaml#/components/responses/DBError"
+    500:
+      $ref: "../openapi.yaml#/components/responses/InternalServerError"

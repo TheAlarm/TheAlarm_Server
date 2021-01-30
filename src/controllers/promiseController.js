@@ -125,3 +125,31 @@ exports.postPromise = async function (req, res) {
         return res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(statusCode.INTERNAL_SERVER_ERROR, responseMessage.INTERNAL_SERVER_ERROR));
     }
 };
+
+/**
+ * 
+ * [GET] /app/my-promise-list
+ * @author ChoSooMin
+ * @header token
+ */
+exports.getMyPromise = async function (req, res) {
+    console.log(`내 다짐 목록 조회 API`);
+
+    try {
+        const userIdx = req.verifiedToken.userIdx; // token으로부터 userIdx 받아오기
+
+        const getPromiseQuery = `SELECT * FROM promise WHERE userIdx = ?`;
+        const result = await query(getPromiseQuery, [userIdx]);
+        const json = utils.successTrue(200, "내 다짐 목록 조회", result);
+
+        if (!result) {
+            return res.status(statusCode.BAD_REQUEST).send(utils.successFalse(statusCode.BAD_REQUEST, `내 다짐목록 받아오기 실패`));
+        }
+
+        return res.status(statusCode.OK).send(json);
+    } catch (err) {
+        console.log(err);
+
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(statusCode.INTERNAL_SERVER_ERROR, responseMessage.INTERNAL_SERVER_ERROR));
+    }
+};

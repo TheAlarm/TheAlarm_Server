@@ -10,3 +10,5 @@
   $ref: "./kakao.yaml"
 /facebook:
   $ref: "./facebook.yaml"
+/app/my-promise-list:
+  $ref: "./my-promise-list.yaml"
