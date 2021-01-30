@@ -1,0 +1,78 @@
+patch:
+  summary: 유저정보 변경 API
+  tags: [user]
+  parameters:
+    - in: header
+      name: x-access-token
+      type: string
+      required: true
+  requestBody:
+        content:
+          application/json:
+            schema:      # Request body contents
+              type: object
+              properties:
+                nickname:
+                  type: string
+                oldPassword:
+                  type: string
+                newPassword:
+                  type: string
+              example:   # Sample object
+                nickname: larry@wooly.co.kr
+                oldPassword: test1
+                newPassword: test2
+  responses:
+    200:
+      description: OK
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              "isSuccess":
+                type: boolean
+              "code":
+                type: integer
+              "message":
+                type: string
+          example:
+            isSuccess: true
+            code: 200
+            message: 내 정보 변경이 완료되었습니다.
+    404:
+      description: OK
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              "isSuccess":
+                type: boolean
+              "code":
+                type: integer
+              "message":
+                type: string
+          example:
+            isSuccess: true
+            code: 404
+            message: 입력값이 없습니다. (닉네임, 현재 비밀번호, 새 비밀번호)
+    206:
+      description: OK
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              "isSuccess":
+                type: boolean
+              "code":
+                type: integer
+              "message":
+                type: string
+          example:
+            isSuccess: true
+            code: 206
+            message: 비밀번호가 일치하지 않습니다.
+    500:
+      $ref: "../openapi.yaml#/components/responses/InternalServerError"

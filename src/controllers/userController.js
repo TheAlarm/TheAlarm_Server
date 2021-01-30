@@ -8,8 +8,9 @@ const responseMessage = require("../../modules/responseMessage");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const config = require("../../config/config");
-const facebookCredentials = require('../../config/loginKey').facebook;
-const queryString = require('querystring');
+const facebookCredentials = require("../../config/loginKey").facebook;
+const queryString = require("querystring");
+const { patch } = require("../routes/userRoute");
 
 /**
  * 2020.12.06
@@ -19,35 +20,29 @@ const queryString = require('querystring');
  * response body: token, userInfoIdx
  */
 exports.signUp = async function (req, res) {
-    const { nickname, email, password } = req.body;
+  const { nickname, email, password } = req.body;
 
-    //body 값 확인
-    if (!nickname)
-      return res.send(
-        utils.successFalse(
-          statusCode.NO_CONTENT,
-          responseMessage.EMPTY_NICKNAME
-        )
-      );
-    if (!email)
-      return res.send(
-        utils.successFalse(statusCode.NO_CONTENT, responseMessage.EMPTY_EMAIL)
-      );
-      // TODO: 이메일 정규식 추가하기
-    if (!password)
-      return res.send(
-        utils.successFalse(
-          statusCode.NO_CONTENT,
-          responseMessage.EMPTY_PASSWORD
-        )
-      );
-    if (password.length < 4 || password.length > 10)
-      return res.send(
-        utils.successFalse(
-          statusCode.INVALID_CONTENT,
-          responseMessage.PASSWORD_RULE
-        )
-      );
+  //body 값 확인
+  if (!nickname)
+    return res.send(
+      utils.successFalse(statusCode.NO_CONTENT, responseMessage.EMPTY_NICKNAME)
+    );
+  if (!email)
+    return res.send(
+      utils.successFalse(statusCode.NO_CONTENT, responseMessage.EMPTY_EMAIL)
+    );
+  // TODO: 이메일 정규식 추가하기
+  if (!password)
+    return res.send(
+      utils.successFalse(statusCode.NO_CONTENT, responseMessage.EMPTY_PASSWORD)
+    );
+  if (password.length < 4 || password.length > 10)
+    return res.send(
+      utils.successFalse(
+        statusCode.INVALID_CONTENT,
+        responseMessage.PASSWORD_RULE
+      )
+    );
   try {
     // 이메일 중복 확인
     const getUserEmailResult = await query(
@@ -126,14 +121,14 @@ exports.signIn = async function (req, res) {
         )
       );
 
-      // 로그인 확인
+    // 로그인 확인
     const getUserResult = await query(
       `SELECT userIdx, nickname, email, password, profile FROM userInfo WHERE email = ?`,
       [email]
     );
-    const userIdx = getUserResult[0].userIdx
-    const nickname = getUserResult[0].nickname
-    const profile = getUserResult[0].profile
+    const userIdx = getUserResult[0].userIdx;
+    const nickname = getUserResult[0].nickname;
+    const profile = getUserResult[0].profile;
 
     let token = await jwt.sign(
       {
@@ -152,27 +147,32 @@ exports.signIn = async function (req, res) {
       .update(password)
       .digest("hex");
 
-      if(getUserResult.length >= 1) {
-        if (getUserResult[0].password !== hashedPwd) {
-          return res.send(
-            utils.successFalse(
-              statusCode.NO_CONTENT,
-              responseMessage.WRONG_PASSWORD)
-          );
-        } else {
-          return res.send(
-            utils.successTrue(
-              statusCode.OK,
-              responseMessage.SIGN_IN_SUCCESS, {token, userIdx, nickname, profile}))
-        }
-      } else {
+    if (getUserResult.length >= 1) {
+      if (getUserResult[0].password !== hashedPwd) {
         return res.send(
           utils.successFalse(
-            statusCode.INVALID_CONTENT,
-            responseMessage.NO_EXIST_USER)
+            statusCode.NO_CONTENT,
+            responseMessage.WRONG_PASSWORD_EMAIL
+          )
+        );
+      } else {
+        return res.send(
+          utils.successTrue(statusCode.OK, responseMessage.SIGN_IN_SUCCESS, {
+            token,
+            userIdx,
+            nickname,
+            profile,
+          })
         );
       }
-      
+    } else {
+      return res.send(
+        utils.successFalse(
+          statusCode.INVALID_CONTENT,
+          responseMessage.NO_EXIST_USER
+        )
+      );
+    }
   } catch (err) {
     return res.send(
       utils.successFalse(
@@ -183,15 +183,12 @@ exports.signIn = async function (req, res) {
   }
 };
 
-
-
 exports.kakao = async function (req, res) {
-
   const options = {
     method: "GET",
     uri: "https://kauth.kakao.com/oauth/authorize",
     json: true,
-    qs: {        
+    qs: {
       client_id: `${config.REST_API_KEY}`,
       redirect_uri: `${config.REDIRECT_URI}`,
       response_type: "code",
@@ -203,7 +200,7 @@ exports.kakao = async function (req, res) {
     console.log(body);
   });
 
-  console.log(login)
+  console.log(login);
 
   // await axios.get(`https://kauth.kakao.com/oauth/authorize?client_id=a989cd90aa0be7eac5f9315560bd8b75&redirect_uri=http://localhost:3232/user/kakao-redirect&response_type=code`,{
   //     headers: { 'content-type': 'application/x-www-form-urlencoded' },
@@ -222,7 +219,7 @@ exports.kakaoRedirect = async function (req, res) {
   const code = req.query.code;
   console.log("코드다");
   console.log(code);
-  
+
   // 리퀘스트 모듈
   const options = {
     method: "post",
@@ -271,15 +268,17 @@ exports.kakaoRedirect = async function (req, res) {
  */
 
 exports.kakaoLogin = async function (req, res) {
-
-  const kakaoAccessToken = req.body.kakaoAccessToken
-  const email =  req.body.email
-  const profile = req.body.profile
+  const kakaoAccessToken = req.body.kakaoAccessToken;
+  const email = req.body.email;
+  const profile = req.body.profile;
 
   if (!kakaoAccessToken)
-  return res.send(
-    utils.successFalse(statusCode.NO_CONTENT, responseMessage.EMPTY_KAKAOTOKEN)
-  );
+    return res.send(
+      utils.successFalse(
+        statusCode.NO_CONTENT,
+        responseMessage.EMPTY_KAKAOTOKEN
+      )
+    );
 
   try {
     const options = {
@@ -287,48 +286,53 @@ exports.kakaoLogin = async function (req, res) {
       uri: "https://kapi.kakao.com/v2/user/me",
       json: true,
       headers: {
-        Authorization: `Bearer ${kakaoAccessToken}`
-      }
+        Authorization: `Bearer ${kakaoAccessToken}`,
+      },
     };
-      const userInfo = await request(options);
+    const userInfo = await request(options);
 
-      const check = await query(
-        `SELECT userIdx, nickname, email, password FROM userInfo WHERE email = ?`,
-        [userInfo.kakao_account.email]
+    const check = await query(
+      `SELECT userIdx, nickname, email, password FROM userInfo WHERE email = ?`,
+      [userInfo.kakao_account.email]
+    );
+    let userIdx = 0;
+    if (check.length !== 1) {
+      // 새로운 유저 회원 가입
+      console.log("새로운 유저 회원 가입");
+      const signUpUserResult = await query(
+        `INSERT INTO userInfo (nickname, email, profile, type) VALUES (?, ?, ?, 'kakao')`,
+        [
+          userInfo.properties.nickname,
+          userInfo.kakao_account.email,
+          userInfo.properties.profile_image,
+        ]
       );
-      let userIdx = 0;
-      if (check.length !== 1) {
-        // 새로운 유저 회원 가입
-        console.log('새로운 유저 회원 가입')
-        const signUpUserResult = await query(
-          `INSERT INTO userInfo (nickname, email, profile, type) VALUES (?, ?, ?, 'kakao')`,
-          [userInfo.properties.nickname, userInfo.kakao_account.email, userInfo.properties.profile_image]
-        );
 
-        userIdx = signUpUserResult.insertId;
-      } else {
-        // 기존 회원 로그인
-        console.log('기존 회원 로그인')
-        userIdx = check[0].userIdx;
-      }
-      // 토큰 생성
-      let token = await jwt.sign(
-        {
-          userIdx: userIdx,
-          id: userInfo.properties.nickname,
-        }, // 토큰의 내용(payload)
-        config.SECRET_ACCESS_KEY, // 비밀 키
-        {
-          expiresIn: "365d",
-          subject: "userInfo",
-        } // 유효 시간은 365일
-      );
-      console.log(token);
-      return res.send(
-        utils.successTrue(
-          statusCode.OK,
-          responseMessage.KAKAO_LOGIN_SUCCESS, {token, userIdx}))
-
+      userIdx = signUpUserResult.insertId;
+    } else {
+      // 기존 회원 로그인
+      console.log("기존 회원 로그인");
+      userIdx = check[0].userIdx;
+    }
+    // 토큰 생성
+    let token = await jwt.sign(
+      {
+        userIdx: userIdx,
+        id: userInfo.properties.nickname,
+      }, // 토큰의 내용(payload)
+      config.SECRET_ACCESS_KEY, // 비밀 키
+      {
+        expiresIn: "365d",
+        subject: "userInfo",
+      } // 유효 시간은 365일
+    );
+    console.log(token);
+    return res.send(
+      utils.successTrue(statusCode.OK, responseMessage.KAKAO_LOGIN_SUCCESS, {
+        token,
+        userIdx,
+      })
+    );
   } catch (err) {
     return res.send(
       utils.successFalse(
@@ -337,27 +341,112 @@ exports.kakaoLogin = async function (req, res) {
       )
     );
   }
-}
+};
+/**
+ * 2021.1.30
+ * 내정보 수정 API
+ * /user
+ */
+exports.profileEdit = async function (req, res) {
+
+  const userIdx = req.verifiedToken.userIdx
+  const nickname = req.body.nickname
+  const oldPassword = req.body.oldPassword
+  const newPassword = req.body.newPassword
+
+
+  if (!nickname)
+    return res.send(
+      utils.successFalse(statusCode.NOT_FOUND, responseMessage.EMPTY_NICKNAME)
+    );
+
+  if (!oldPassword)
+    return res.send(
+      utils.successFalse(
+        statusCode.NOT_FOUND,
+        responseMessage.EMPTY_PASSWORD_OLD
+      )
+    );
+
+  try {
+    const oldHashedPwd = await crypto
+      .createHash("sha512")
+      .update(oldPassword)
+      .digest("hex");
+
+    // 현재 닉네임과 비밀번호가 같은 유저가 1명이라면 비밀번호 변경
+    const getUserResult = await query(
+      `SELECT userIdx, nickname, email, password FROM userInfo WHERE password = ? AND userIdx = ?`,
+      [oldHashedPwd, userIdx]
+    );
+
+    if (getUserResult.length == 1) {
+      if (!newPassword) {
+        return res.send(
+          utils.successFalse(
+            statusCode.NOT_FOUND,
+            responseMessage.EMPTY_PASSWORD_NEW
+          )
+        );
+      } else {
+        const newHashedPwd = await crypto
+          .createHash("sha512")
+          .update(newPassword)
+          .digest("hex");
+
+        const updateNewPasswordResult = await query(
+          `UPDATE userInfo SET password = ? ,nickname = ? WHERE userIdx = ? `,
+          [newHashedPwd, nickname, getUserResult[0].userIdx]
+        );
+        return res.send(
+          utils.successTrue(
+            statusCode.OK,
+            responseMessage.USERINFO_EDIT_SUCCESS
+          )
+        );
+      }
+    } else {
+      return res.send(
+        utils.successFalse(
+          statusCode.INVALID_CONTENT,
+          responseMessage.WRONG_PASSWORD
+        )
+      );
+    }
+  } catch (err) {
+    return res.send(
+      utils.successFalse(
+        statusCode.INTERNAL_SERVER_ERROR,
+        `Error: ${err.message}`
+      )
+    );
+  }
+};
 
 exports.facebook = async function (req, res) {
-  console.log('페이스북 로그인');
+  console.log("페이스북 로그인");
   try {
-    const {email, name, profile} = req.decoded;
+    const { email, name, profile } = req.decoded;
 
-    //   
-    const isExistUser = await query(`SELECT userIdx, nickname, email, password FROM userInfo WHERE email = ?`, [email]);
+    //
+    const isExistUser = await query(
+      `SELECT userIdx, nickname, email, password FROM userInfo WHERE email = ?`,
+      [email]
+    );
     let userIdx = 0;
 
     if (isExistUser.length !== 1) {
       // 새로운 유저 회원 가입
-      console.log('새로운 유저 회원 가입(페북)');
-      const signUpFbResult = await query(`INSERT INTO userInfo (nickname, email, profile, type) VALUES (?, ?, ?, ?)`, [name, email, profile, "facebook"]);
+      console.log("새로운 유저 회원 가입(페북)");
+      const signUpFbResult = await query(
+        `INSERT INTO userInfo (nickname, email, profile, type) VALUES (?, ?, ?, ?)`,
+        [name, email, profile, "facebook"]
+      );
 
       userIdx = signUpFbResult.insertId;
-    } 
-    else {
+    } else {
       // 기존 회원 로그인
-      console.log('기존 회원 로그인(페북)');
+      console.log("기존 회원 로그인(페북)");
       userIdx = isExistUser[0].userIdx;
     }
 
@@ -376,13 +465,22 @@ exports.facebook = async function (req, res) {
 
     console.log(token);
     return res.send(
-      utils.successTrue(
-        statusCode.OK,
-        responseMessage.FACEBOOK_LOGIN_SUCCESS, {token, userIdx}))
-  } catch(err) {
+      utils.successTrue(statusCode.OK, responseMessage.FACEBOOK_LOGIN_SUCCESS, {
+        token,
+        userIdx,
+      })
+    );
+  } catch (err) {
     console.log(err);
-    
-    return res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(statusCode.INTERNAL_SERVER_ERROR, responseMessage.INTERNAL_SERVER_ERROR));
+
+    return res
+      .status(statusCode.INTERNAL_SERVER_ERROR)
+      .send(
+        utils.successFalse(
+          statusCode.INTERNAL_SERVER_ERROR,
+          responseMessage.INTERNAL_SERVER_ERROR
+        )
+      );
   }
 };
 
@@ -397,22 +495,42 @@ exports.editProfile = async function (req, res) {
       console.log(req.file.location);
       profileImg = req.file.location;
     }
-    
+
     if (profileImg == ``) {
-      return res.status(statusCode.NO_CONTENT).send(utils.successFalse(statusCode.NO_CONTENT, '프로필 사진을 선택해주세요'));
+      return res
+        .status(statusCode.NO_CONTENT)
+        .send(
+          utils.successFalse(
+            statusCode.NO_CONTENT,
+            "프로필 사진을 선택해주세요"
+          )
+        );
     }
 
     const editProfileQuery = `UPDATE userInfo SET profile = ? WHERE userIdx = ?`;
     const result = await query(editProfileQuery, [profileImg, userIdx]);
 
     if (!result) {
-      return res.status(statusCode.BAD_REQUEST).send(utils.successFalse(statusCode.BAD_REQUEST, '프로필 사진 변경 실패'));
-  }
+      return res
+        .status(statusCode.BAD_REQUEST)
+        .send(
+          utils.successFalse(statusCode.BAD_REQUEST, "프로필 사진 변경 실패")
+        );
+    }
 
-  return res.status(statusCode.OK).send(utils.successTrue(statusCode.OK, `프로필 사진 변경 성공`));
+    return res
+      .status(statusCode.OK)
+      .send(utils.successTrue(statusCode.OK, `프로필 사진 변경 성공`));
   } catch (err) {
     console.log(err);
 
-    return res.status(statusCode.INTERNAL_SERVER_ERROR).send(utils.successFalse(statusCode.INTERNAL_SERVER_ERROR, responseMessage.INTERNAL_SERVER_ERROR));
+    return res
+      .status(statusCode.INTERNAL_SERVER_ERROR)
+      .send(
+        utils.successFalse(
+          statusCode.INTERNAL_SERVER_ERROR,
+          responseMessage.INTERNAL_SERVER_ERROR
+        )
+      );
   }
 };

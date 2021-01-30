@@ -14,6 +14,7 @@ router.post("/kakao", user.kakaoLogin);                     // 토큰 받아서 
 router.get("/user/kakao-redirect", user.kakaoRedirect);     //리다리렉션 코드
 
 router.post('/facebook', fb, user.facebook);
+router.patch("/user", jwtMiddleware, user.profileEdit);
 
 router.put('/userInfo/editProfile', jwtMiddleware, upload.single('profile'), user.editProfile);
 

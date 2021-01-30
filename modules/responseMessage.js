@@ -12,16 +12,23 @@ module.exports = {
 
     EMPTY_EMAIL: "이메일을 확인해 주세요.",
     EMPTY_PASSWORD: "비밀번호를 확인해 주세요.",
-    WRONG_PASSWORD: "이메일 또는 비밀번호를 확인해 주세요",
+    EMPTY_PASSWORD_OLD: "현재 비밀번호를 입력해주세요.",
+    EMPTY_PASSWORD_NEW: "변경할 비밀번호를 입력해주세요.",
+    WRONG_PASSWORD_EMAIL: "이메일 또는 비밀번호를 확인해 주세요",
+    WRONG_PASSWORD: "비밀번호가 일치하지 않습니다.",
     EMPTY_NICKNAME: "닉네임을 입력해주세요.",
     PASSWORD_RULE: "비밀번호는 4~10자리를 입력해주세요.",
     DUPLICATE_EMAIL: "이미 가입된 이메일 입니다.",
     NO_EXIST_USER: "존재하지 않는 회원입니다. ",
     EMPTY_KAKAOTOKEN: "카카오 토큰값을 입력해주세요",
 
+    USERINFO_EDIT_SUCCESS : "내 정보 변경이 완료되었습니다.",
+
     EMPTY_FBTOKEN: "페이스북 토큰값을 입력해주세요",
     INVALID_TOKEN: "잘못된 토큰", 
     FACEBOOK_LOGIN_SUCCESS: "페이스북 로그인 성공"
+
+
 
 
 }

@@ -16,7 +16,7 @@ post:
               example:   # Sample object
                 email: larry@wooly.co.kr
                 password: '1111'
-                nickname: 동동이
+                nickname: 동동동이
 
   responses:
     200:
