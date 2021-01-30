@@ -19,7 +19,7 @@ post:
               type: string
         example:
           promise: "오늘은 힘찬 하루를 보내야지"
-          public: "ok"
+          public: 1
   responses:
     201:
       description: Create Success
