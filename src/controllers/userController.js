@@ -337,6 +337,12 @@ exports.kakaoLogin = async function (req, res) {
     );
   }
 }
+// 내 정보 수정
+exports.profileEdit = async function (req, res) {
+  const nickname = req.body.nickname
+  const pass
+
+}
 
 exports.facebook = async function (req, res) {
   const { id, email, name } = req.body;

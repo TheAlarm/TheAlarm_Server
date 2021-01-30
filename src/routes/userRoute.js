@@ -6,6 +6,7 @@ const facebookCredentials = require('../../config/loginKey').facebook;
 
 router.post("/sign-up", user.signUp);
 router.post("/sign-in", user.signIn);
+router.patch("/user", user.profileEdit);
 
 // router.get("/user/kakao", user.kakao);                   // 인가코드, 토큰 만들기
 router.post("/kakao", user.kakaoLogin);                     // 토큰 받아서 회원가입 시키기
