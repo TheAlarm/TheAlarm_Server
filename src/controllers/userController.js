@@ -32,10 +32,10 @@ exports.signUp = async function (req, res) {
       utils.successFalse(statusCode.NO_CONTENT, responseMessage.EMPTY_EMAIL)
     );
   // TODO: 이메일 정규식 추가하기
-  if (!password)
-    return res.send(
-      utils.successFalse(statusCode.NO_CONTENT, responseMessage.EMPTY_PASSWORD)
-    );
+  // if (!password)
+  //   return res.send(
+  //     utils.successFalse(statusCode.NO_CONTENT, responseMessage.EMPTY_PASSWORD)
+  //   );
   if (password.length < 4 || password.length > 10)
     return res.send(
       utils.successFalse(
@@ -269,8 +269,8 @@ exports.kakaoRedirect = async function (req, res) {
 
 exports.kakaoLogin = async function (req, res) {
   const kakaoAccessToken = req.body.kakaoAccessToken;
-  const email = req.body.email;
-  const profile = req.body.profile;
+  // const email = req.body.email;
+  // const profile = req.body.profile;
 
   if (!kakaoAccessToken)
     return res.send(
@@ -299,16 +299,23 @@ exports.kakaoLogin = async function (req, res) {
     if (check.length !== 1) {
       // 새로운 유저 회원 가입
       console.log("새로운 유저 회원 가입");
-      const signUpUserResult = await query(
-        `INSERT INTO userInfo (nickname, email, profile, type) VALUES (?, ?, ?, 'kakao')`,
-        [
-          userInfo.properties.nickname,
-          userInfo.kakao_account.email,
-          userInfo.properties.profile_image,
-        ]
-      );
+      // const signUpUserResult = await query(
+      //   `INSERT INTO userInfo (nickname, email, profile, type) VALUES (?, ?, ?, 'kakao')`,
+      //   [
+      //     userInfo.properties.nickname,
+      //     userInfo.kakao_account.email,
+      //     userInfo.properties.profile_image,
+      //   ]
+      // );
 
-      userIdx = signUpUserResult.insertId;
+      // userIdx = signUpUserResult.insertId;
+
+      return res.send(
+        utils.successTrue(statusCode.CREATED, responseMessage.KAKAO_SIGNUP_SUCCESS, {
+          "nickname" : userInfo.properties.nickname,
+          "email" :userInfo.kakao_account.email
+        })
+      );
     } else {
       // 기존 회원 로그인
       console.log("기존 회원 로그인");
@@ -422,6 +429,19 @@ exports.profileEdit = async function (req, res) {
     );
   }
 };
+
+/**
+ * 2021.1.31
+ * 자동 로그인 API
+ * /jwt
+ */
+exports.check = async function (req, res) {
+  const result = req.verifiedToken.userIdx
+
+  return res.send(utils.successTrue(statusCode.OK, responseMessage.POSSIBLE_JWTTOKEN, {userIdx : result}))
+
+};
+ 
 
 exports.facebook = async function (req, res) {
   console.log("페이스북 로그인");

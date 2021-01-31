@@ -8,6 +8,7 @@ const jwtMiddleware = require('../../modules/jwtMiddleware');
 
 router.post("/sign-up", user.signUp);
 router.post("/sign-in", user.signIn);
+router.get("/jwt", jwtMiddleware ,user.check);
 
 // router.get("/user/kakao", user.kakao);                   // 인가코드, 토큰 만들기
 router.post("/kakao", user.kakaoLogin);                     // 토큰 받아서 회원가입 시키기

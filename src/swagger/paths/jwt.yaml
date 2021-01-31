@@ -1,0 +1,62 @@
+get:
+  summary: 자동로그인 API
+  tags: [user]
+  parameters:
+    - in: header
+      name: x-access-token
+      type: string
+      required: true
+  responses:
+    200:
+      description: OK
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              "isSuccess":
+                type: boolean
+              "code":
+                type: integer
+              "message":
+                type: string
+          example:
+            isSuccess: true
+            code: 200
+            message: 토큰 검증 성공
+    301:
+      description: OK
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              "isSuccess":
+                type: boolean
+              "code":
+                type: integer
+              "message":
+                type: string
+          example:
+            isSuccess: false
+            code: 301
+            message: 로그인이 되어 있지 않습니다.
+    304:
+      description: OK
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              "isSuccess":
+                type: boolean
+              "code":
+                type: integer
+              "message":
+                type: string
+          example:
+            isSuccess: false
+            code: 304
+            message: 검증실패
+    500:
+      $ref: "../openapi.yaml#/components/responses/InternalServerError"

@@ -16,3 +16,5 @@
   $ref: "./editProfile.yaml"
 /user:
   $ref: "./editUser.yaml"
+/jwt:
+  $ref: "./jwt.yaml"

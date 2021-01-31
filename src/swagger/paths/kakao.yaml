@@ -24,8 +24,27 @@ post:
                 type: integer
               "message":
                 type: string
-              "result":
-                $ref: "../openapi.yaml#/components/schemas/Auth"
+          example:
+            isSuccess: true
+            code: 200
+            message: 카카오 로그인 성공
+    201:
+      description: OK
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              "isSuccess":
+                type: boolean
+              "code":
+                type: integer
+              "message":
+                type: string
+          example:
+            isSuccess: true
+            code: 201
+            message: 카카오 회원가입 가능합니다.
     204:
       $ref: "../openapi.yaml#/components/responses/EmptyValueError"
     500:

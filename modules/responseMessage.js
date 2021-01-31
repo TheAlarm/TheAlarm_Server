@@ -8,7 +8,9 @@ module.exports = {
     SIGN_UP_SUCCESS: "회원가입 성공",
     SIGN_IN_SUCCESS: "로그인 성공",
     KAKAO_LOGIN_SUCCESS: "카카오 로그인 성공",
+    KAKAO_SIGNUP_SUCCESS: "카카오 회원가입 가능합니다.",
     POSSIBLE_NICKNAME: "사용 가능한 닉네임입니다.",
+    POSSIBLE_JWTTOKEN: "토큰 검증 성공",
 
     EMPTY_EMAIL: "이메일을 확인해 주세요.",
     EMPTY_PASSWORD: "비밀번호를 확인해 주세요.",
