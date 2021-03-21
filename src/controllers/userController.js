@@ -405,10 +405,16 @@ exports.profileEdit = async function (req, res) {
           `UPDATE userInfo SET password = ? ,nickname = ? WHERE userIdx = ? `,
           [newHashedPwd, nickname, getUserResult[0].userIdx]
         );
+
+        const updateUserResult = await query(
+          `SELECT nickname FROM userInfo WHERE userIdx = ? `,
+          [userIdx]
+        );
         return res.send(
           utils.successTrue(
             statusCode.OK,
-            responseMessage.USERINFO_EDIT_SUCCESS
+            responseMessage.USERINFO_EDIT_SUCCESS,
+            updateUserResult[0]
           )
         );
       }

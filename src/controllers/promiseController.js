@@ -27,7 +27,7 @@ exports.getAllPromise = async function (req, res) {
         }
         else { // 둘 중 하나 있을 경우(date만 있을 경우)
             if (!page || page == 0) { // page 쿼리를 입력하지 않거나 0으로 입력하면 전체 목록을 보여준다. (페이징 해서 보내지 않음) -> 날짜만 있을 경우
-                const getDatePromiseListQuery = `SELECT userInfo.profile, userInfo.nickname, promise.promiseIdx, promise.createdAt, promise.promise, promise.public FROM promise JOIN userInfo ON promise.userIdx = userInfo.userIdx WHERE DATE(promise.createdAt) = ?`;
+                const getDatePromiseListQuery = `SELECT ifnull(round(19.3333,1),0), userInfo.profile, userInfo.nickname, promise.promiseIdx, promise.createdAt, promise.promise, promise.public FROM promise JOIN userInfo ON promise.userIdx = userInfo.userIdx WHERE DATE(promise.createdAt) = ?`;
     
                 const result = await query(getDatePromiseListQuery, [date]);
                 const json = utils.successTrue(statusCode.OK, "날짜별 다짐 목록 전체 조회", result);
@@ -106,6 +106,7 @@ exports.postPromise = async function (req, res) {
         } = req.body;
         
         const userIdx = req.verifiedToken.userIdx; // token으로부터 userIdx 받아오기
+        console.log(req.verifiedToken)
 
         const postPromiseQuery = `INSERT INTO promise(promise, createdAt, public, userIdx) VALUES (?, ?, ?, ?)`;
         const date = Date.now();
