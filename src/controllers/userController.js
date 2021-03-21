@@ -407,7 +407,7 @@ exports.profileEdit = async function (req, res) {
         );
 
         const updateUserResult = await query(
-          `SELECT nickname FROM userInfo WHERE userIdx = ? `,
+          `SELECT nickname, profile FROM userInfo WHERE userIdx = ? `,
           [userIdx]
         );
         return res.send(
