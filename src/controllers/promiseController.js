@@ -18,7 +18,7 @@ exports.getAllPromise = async function (req, res) {
         } = req.query;
 
         if (!date && !page) { // 둘 다 없으면 다짐 목록 전체 조회
-            const getAllPromiseQuery = `SELECT userInfo.profile, userInfo.nickname, promise.promiseIdx, promise.createdAt, promise.promise, promise.public FROM promise JOIN userInfo ON promise.userIdx = userInfo.userIdx`;
+            const getAllPromiseQuery = `SELECT userInfo.profile, userInfo.nickname, promise.promiseIdx, promise.createdAt, promise.promise, promise.public FROM promise JOIN userInfo ON promise.userIdx = userInfo.userIdx ORDER BY promise.createdAt DESC`;
             const result = await query(getAllPromiseQuery);
 
             const json = utils.successTrue(200, "다짐목록 조회", result);
@@ -27,7 +27,7 @@ exports.getAllPromise = async function (req, res) {
         }
         else { // 둘 중 하나 있을 경우(date만 있을 경우)
             if (!page || page == 0) { // page 쿼리를 입력하지 않거나 0으로 입력하면 전체 목록을 보여준다. (페이징 해서 보내지 않음) -> 날짜만 있을 경우
-                const getDatePromiseListQuery = `SELECT ifnull(round(19.3333,1),0), userInfo.profile, userInfo.nickname, promise.promiseIdx, promise.createdAt, promise.promise, promise.public FROM promise JOIN userInfo ON promise.userIdx = userInfo.userIdx WHERE DATE(promise.createdAt) = ?`;
+                const getDatePromiseListQuery = `SELECT userInfo.profile, userInfo.nickname, promise.promiseIdx, promise.createdAt, promise.promise, promise.public FROM promise JOIN userInfo ON promise.userIdx = userInfo.userIdx WHERE DATE(promise.createdAt) = ? ORDER BY promise.createdAt DESC`;
     
                 const result = await query(getDatePromiseListQuery, [date]);
                 const json = utils.successTrue(statusCode.OK, "날짜별 다짐 목록 전체 조회", result);
@@ -35,7 +35,7 @@ exports.getAllPromise = async function (req, res) {
                 return res.status(statusCode.OK).send(json);
             }
             else { // 페이징 처리
-                const getDatePromiseListQuery = `SELECT userInfo.profile, userInfo.nickname, promise.promiseIdx, promise.createdAt, promise.promise, promise.public FROM promise JOIN userInfo ON promise.userIdx = userInfo.userIdx WHERE DATE(promise.createdAt) = ? ORDER BY promise.promiseIdx LIMIT ? OFFSET ?`;
+                const getDatePromiseListQuery = `SELECT userInfo.profile, userInfo.nickname, promise.promiseIdx, promise.createdAt, promise.promise, promise.public FROM promise JOIN userInfo ON promise.userIdx = userInfo.userIdx WHERE DATE(promise.createdAt) = ? ORDER BY promise.createdAt DESC LIMIT ? OFFSET ?`;
     
                 const result = await query(getDatePromiseListQuery, [date, 10, (page - 1) * 10]);
                 const json = utils.successTrue(statusCode.OK, "날짜별 다짐 목록 전체 조회(페이징)", result);
@@ -67,7 +67,7 @@ exports.getDatePromiseList = async function (req, res) {
         }
 
         if (page == 0) {
-            const getDatePromiseListQuery = `SELECT userInfo.profile, userInfo.nickname, promise.promiseIdx, promise.createdAt, promise.promise, promise.public FROM promise JOIN userInfo ON promise.userIdx = userInfo.userIdx WHERE DATE(promise.createdAt) = ?`;
+            const getDatePromiseListQuery = `SELECT userInfo.profile, userInfo.nickname, promise.promiseIdx, promise.createdAt, promise.promise, promise.public FROM promise JOIN userInfo ON promise.userIdx = userInfo.userIdx WHERE DATE(promise.createdAt) = ? ORDER BY promise.createdAt DESC`;
 
             const result = await query(getDatePromiseListQuery, [date]);
             const json = utils.successTrue(200, "날짜별 다짐 목록 전체 조회", result);
@@ -75,7 +75,7 @@ exports.getDatePromiseList = async function (req, res) {
             return res.status(statusCode.OK).send(json);
         }
         else { // 페이징 처리
-            const getDatePromiseListQuery = `SELECT userInfo.profile, userInfo.nickname, promise.promiseIdx, promise.createdAt, promise.promise, promise.public FROM promise JOIN userInfo ON promise.userIdx = userInfo.userIdx WHERE DATE(promise.createdAt) = ? ORDER BY promise.promiseIdx LIMIT ? OFFSET ?`;
+            const getDatePromiseListQuery = `SELECT userInfo.profile, userInfo.nickname, promise.promiseIdx, promise.createdAt, promise.promise, promise.public FROM promise JOIN userInfo ON promise.userIdx = userInfo.userIdx WHERE DATE(promise.createdAt) = ? ORDER BY promise.createdAt DESC LIMIT ? OFFSET ?`;
 
             const result = await query(getDatePromiseListQuery, [date, (page - 1) * 10]);
             const json = utils.successTrue(200, "날짜별 다짐 목록 전체 조회(페이징)", result);
@@ -139,7 +139,7 @@ exports.getMyPromise = async function (req, res) {
     try {
         const userIdx = req.verifiedToken.userIdx; // token으로부터 userIdx 받아오기
 
-        const getPromiseQuery = `SELECT * FROM promise WHERE userIdx = ?`;
+        const getPromiseQuery = `SELECT * FROM promise WHERE userIdx = ? ORDER BY createdAt DESC`;
         const result = await query(getPromiseQuery, [userIdx]);
         const json = utils.successTrue(200, "내 다짐 목록 조회", result);
 
