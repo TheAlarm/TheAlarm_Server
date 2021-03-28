@@ -11,7 +11,7 @@ const config = require("../../config/config");
 const facebookCredentials = require("../../config/loginKey").facebook;
 const queryString = require("querystring");
 const { patch } = require("../routes/userRoute");
-const nodemailer = require('nodemailer');
+const nodemailer = require("nodemailer");
 /**
  * 2020.12.06
  * 회원가입 API
@@ -30,6 +30,10 @@ exports.signUp = async function (req, res) {
   if (!email)
     return res.send(
       utils.successFalse(statusCode.NO_CONTENT, responseMessage.EMPTY_EMAIL)
+    );
+  if (!type)
+    return res.send(
+      utils.successFalse(statusCode.NO_CONTENT, responseMessage.EMPTY_TYPE)
     );
   // TODO: 이메일 정규식 추가하기
   // if (!password)
@@ -129,7 +133,6 @@ exports.signIn = async function (req, res) {
 
     // 이메일이 존재할 경우
     if (getUserResult.length >= 1) {
-
       const userIdx = getUserResult[0].userIdx;
       const nickname = getUserResult[0].nickname;
       const profile = getUserResult[0].profile;
@@ -151,7 +154,6 @@ exports.signIn = async function (req, res) {
         .update(password)
         .digest("hex");
 
-
       if (getUserResult[0].password !== hashedPwd) {
         return res.send(
           utils.successFalse(
@@ -159,7 +161,7 @@ exports.signIn = async function (req, res) {
             responseMessage.WRONG_PASSWORD_EMAIL
           )
         );
-      } else { 
+      } else {
         return res.send(
           utils.successTrue(statusCode.OK, responseMessage.SIGN_IN_SUCCESS, {
             token,
@@ -284,7 +286,7 @@ exports.kakaoLogin = async function (req, res) {
         responseMessage.EMPTY_KAKAOTOKEN
       )
     );
-    console.log(kakaoAccessToken)
+  console.log(kakaoAccessToken);
 
   try {
     const options = {
@@ -297,7 +299,7 @@ exports.kakaoLogin = async function (req, res) {
     };
     const userInfo = await request(options);
 
-    console.log(userInfo)
+    console.log(userInfo);
 
     const check = await query(
       `SELECT userIdx, nickname, email, password FROM userInfo WHERE email = ?`,
@@ -467,8 +469,6 @@ exports.profileEdit = async function (req, res) {
 //   // 존재할 경우에 이메일 보내기
 //   if(getUserResult.length >= 1){
 
-
-
 //   } else {
 //     // 존재하지 않는 이메일
 //     return res.send(
@@ -477,13 +477,8 @@ exports.profileEdit = async function (req, res) {
 //         responseMessage.NO_EXIST_USER
 //       )
 //     );
-  
+
 //   }
-  
-
-
-
-
 
 //  }
 
@@ -596,7 +591,10 @@ exports.editProfile = async function (req, res) {
       return res
         .status(statusCode.BAD_REQUEST)
         .send(
-          utils.successFalse(statusCode.BAD_REQUEST, responseMessage.PROFILEIMG_EDIT_FAIL)
+          utils.successFalse(
+            statusCode.BAD_REQUEST,
+            responseMessage.PROFILEIMG_EDIT_FAIL
+          )
         );
     }
 
@@ -606,7 +604,13 @@ exports.editProfile = async function (req, res) {
 
     return res
       .status(statusCode.OK)
-      .send(utils.successTrue(statusCode.OK, responseMessage.PROFILEIMG_EDIT_SUCCESS, userData[0]));
+      .send(
+        utils.successTrue(
+          statusCode.OK,
+          responseMessage.PROFILEIMG_EDIT_SUCCESS,
+          userData[0]
+        )
+      );
   } catch (err) {
     console.log(err);
 

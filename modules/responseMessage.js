@@ -14,6 +14,7 @@ module.exports = {
 
     EMPTY_EMAIL: "이메일을 확인해 주세요.",
     EMPTY_PASSWORD: "비밀번호를 확인해 주세요.",
+    EMPTY_TYPE: "타입을 입력해 주세요.",
     EMPTY_PASSWORD_OLD: "현재 비밀번호를 입력해주세요.",
     EMPTY_PASSWORD_NEW: "변경할 비밀번호를 입력해주세요.",
     WRONG_PASSWORD_EMAIL: "이메일 또는 비밀번호를 확인해 주세요",
