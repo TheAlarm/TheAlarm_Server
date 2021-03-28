@@ -24,7 +24,10 @@ module.exports = {
     NO_EXIST_USER: "존재하지 않는 회원입니다. ",
     EMPTY_KAKAOTOKEN: "카카오 토큰값을 입력해주세요",
 
-    USERINFO_EDIT_SUCCESS : "내 정보 변경이 완료되었습니다.",
+    USERINFO_EDIT_SUCCESS : "내 정보 변경이 완료되었습니다",
+    PROFILEIMG_EDIT_SUCCESS : "프로필 사진 변경이 완료되었습니다",
+    PROFILEIMG_EDIT_FAIL : "프로필 사진 변경에 실패하였습니다",
+    SELECT_PROFILE : "프로필 사진을 선택해주세요",
 
     EMPTY_FBTOKEN: "페이스북 토큰값을 입력해주세요",
     INVALID_TOKEN: "잘못된 토큰", 
