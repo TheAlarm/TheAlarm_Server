@@ -25,10 +25,14 @@ put:
                 type: integer
               "message":
                 type: string
+              "result":
+                type: data
           example:
             isSuccess: true
             code: 200
             message: 프로필 사진 변경 성공
+            result:
+
     400:
       $ref: "../openapi.yaml#/components/responses/BadRequest"
     600:

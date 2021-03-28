@@ -383,10 +383,13 @@ paths:
                     type: integer
                   message:
                     type: string
+                  result:
+                    type: data
               example:
                 isSuccess: true
                 code: 200
                 message: 프로필 사진 변경 성공
+                result: null
         '400':
           $ref: '#/components/responses/BadRequest'
         '500':

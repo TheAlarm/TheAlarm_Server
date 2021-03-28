@@ -562,7 +562,7 @@ exports.editProfile = async function (req, res) {
 
     return res
       .status(statusCode.OK)
-      .send(utils.successTrue(statusCode.OK, responseMessage.PROFILEIMG_EDIT_SUCCESS, userData));
+      .send(utils.successTrue(statusCode.OK, responseMessage.PROFILEIMG_EDIT_SUCCESS, userData[0]));
   } catch (err) {
     console.log(err);
 
