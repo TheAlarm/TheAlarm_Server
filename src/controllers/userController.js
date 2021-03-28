@@ -84,12 +84,24 @@ exports.signUp = async function (req, res) {
         subject: "userInfo",
       } // 유효 시간은 365일
     );
-    return res.send(
-      utils.successTrue(statusCode.OK, responseMessage.SIGN_UP_SUCCESS, {
-        token,
-        userIdx,
-      })
+
+    const getUserResult = await query(
+      `SELECT userIdx, nickname, email, password, profile FROM userInfo WHERE email = ?`,
+      [email]
     );
+    if(getUserResult.length != 0){
+      const nickname = getUserResult[0].nickname;
+      const profile = getUserResult[0].profile;
+
+      return res.send(
+        utils.successTrue(statusCode.OK, responseMessage.SIGN_UP_SUCCESS, {
+          token,
+          userIdx,
+          nickname,
+          profile
+        })
+      );
+    }
   } catch (err) {
     return res.send(
       utils.successFalse(
