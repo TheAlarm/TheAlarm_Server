@@ -126,28 +126,32 @@ exports.signIn = async function (req, res) {
       `SELECT userIdx, nickname, email, password, profile FROM userInfo WHERE email = ?`,
       [email]
     );
-    const userIdx = getUserResult[0].userIdx;
-    const nickname = getUserResult[0].nickname;
-    const profile = getUserResult[0].profile;
 
-    let token = await jwt.sign(
-      {
-        userIdx: userIdx,
-        id: getUserResult[0].nickname,
-      }, // 토큰의 내용(payload)
-      config.SECRET_ACCESS_KEY, // 비밀 키
-      {
-        expiresIn: "365d",
-        subject: "userInfo",
-      } // 유효 시간은 365일
-    );
-
-    const hashedPwd = await crypto
-      .createHash("sha512")
-      .update(password)
-      .digest("hex");
-
+    // 이메일이 존재할 경우
     if (getUserResult.length >= 1) {
+
+      const userIdx = getUserResult[0].userIdx;
+      const nickname = getUserResult[0].nickname;
+      const profile = getUserResult[0].profile;
+
+      let token = await jwt.sign(
+        {
+          userIdx: userIdx,
+          id: getUserResult[0].nickname,
+        }, // 토큰의 내용(payload)
+        config.SECRET_ACCESS_KEY, // 비밀 키
+        {
+          expiresIn: "365d",
+          subject: "userInfo",
+        } // 유효 시간은 365일
+      );
+
+      const hashedPwd = await crypto
+        .createHash("sha512")
+        .update(password)
+        .digest("hex");
+
+
       if (getUserResult[0].password !== hashedPwd) {
         return res.send(
           utils.successFalse(
@@ -155,7 +159,7 @@ exports.signIn = async function (req, res) {
             responseMessage.WRONG_PASSWORD_EMAIL
           )
         );
-      } else {
+      } else { 
         return res.send(
           utils.successTrue(statusCode.OK, responseMessage.SIGN_IN_SUCCESS, {
             token,
@@ -165,6 +169,7 @@ exports.signIn = async function (req, res) {
           })
         );
       }
+      // 이메일이 존재하지 않을 경우
     } else {
       return res.send(
         utils.successFalse(
@@ -311,10 +316,14 @@ exports.kakaoLogin = async function (req, res) {
       // userIdx = signUpUserResult.insertId;
 
       return res.send(
-        utils.successTrue(statusCode.CREATED, responseMessage.KAKAO_SIGNUP_SUCCESS, {
-          "nickname" : userInfo.properties.nickname,
-          "email" :userInfo.kakao_account.email
-        })
+        utils.successTrue(
+          statusCode.CREATED,
+          responseMessage.KAKAO_SIGNUP_SUCCESS,
+          {
+            nickname: userInfo.properties.nickname,
+            email: userInfo.kakao_account.email,
+          }
+        )
       );
     } else {
       // 기존 회원 로그인
@@ -355,12 +364,10 @@ exports.kakaoLogin = async function (req, res) {
  * /user
  */
 exports.profileEdit = async function (req, res) {
-
-  const userIdx = req.verifiedToken.userIdx
-  const nickname = req.body.nickname
-  const oldPassword = req.body.oldPassword
-  const newPassword = req.body.newPassword
-
+  const userIdx = req.verifiedToken.userIdx;
+  const nickname = req.body.nickname;
+  const oldPassword = req.body.oldPassword;
+  const newPassword = req.body.newPassword;
 
   if (!nickname)
     return res.send(
@@ -442,12 +449,14 @@ exports.profileEdit = async function (req, res) {
  * /jwt
  */
 exports.check = async function (req, res) {
-  const result = req.verifiedToken.userIdx
+  const result = req.verifiedToken.userIdx;
 
-  return res.send(utils.successTrue(statusCode.OK, responseMessage.POSSIBLE_JWTTOKEN, {userIdx : result}))
-
+  return res.send(
+    utils.successTrue(statusCode.OK, responseMessage.POSSIBLE_JWTTOKEN, {
+      userIdx: result,
+    })
+  );
 };
- 
 
 exports.facebook = async function (req, res) {
   console.log("페이스북 로그인");
