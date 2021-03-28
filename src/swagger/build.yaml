@@ -386,10 +386,14 @@ paths:
                     type: integer
                   message:
                     type: string
+                  result:
+                    type: data
               example:
                 isSuccess: true
                 code: 200
                 message: 프로필 사진 변경 성공
+                result:
+                  profile: 'https://wooly.s3.ap-northeast-2.amazonaws.com/1616938781416.jpg'
         '400':
           $ref: '#/components/responses/BadRequest'
         '500':

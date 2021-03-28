@@ -563,6 +563,9 @@ exports.facebook = async function (req, res) {
   }
 };
 
+/**
+ * 프로필 이미지 변경 API
+ */
 exports.editProfile = async function (req, res) {
   console.log(`프로필 이미지 변경`);
 
@@ -581,7 +584,7 @@ exports.editProfile = async function (req, res) {
         .send(
           utils.successFalse(
             statusCode.NO_CONTENT,
-            "프로필 사진을 선택해주세요"
+            responseMessage.SELECT_PROFILE
           )
         );
     }
@@ -593,13 +596,17 @@ exports.editProfile = async function (req, res) {
       return res
         .status(statusCode.BAD_REQUEST)
         .send(
-          utils.successFalse(statusCode.BAD_REQUEST, "프로필 사진 변경 실패")
+          utils.successFalse(statusCode.BAD_REQUEST, responseMessage.PROFILEIMG_EDIT_FAIL)
         );
     }
 
+    // 회원 데이터 다시 받아오기 (프로필만)
+    const getUserDataQuery = `SELECT profile FROM userInfo WHERE userIdx = ?`;
+    const userData = await query(getUserDataQuery, [userIdx]);
+
     return res
       .status(statusCode.OK)
-      .send(utils.successTrue(statusCode.OK, `프로필 사진 변경 성공`));
+      .send(utils.successTrue(statusCode.OK, responseMessage.PROFILEIMG_EDIT_SUCCESS, userData[0]));
   } catch (err) {
     console.log(err);
 
