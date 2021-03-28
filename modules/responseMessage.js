@@ -23,6 +23,7 @@ module.exports = {
     DUPLICATE_EMAIL: "이미 가입된 이메일 입니다.",
     NO_EXIST_USER: "존재하지 않는 회원입니다. ",
     EMPTY_KAKAOTOKEN: "카카오 토큰값을 입력해주세요",
+    EMPTY_ACCEPT_REQUIRE: "이메일 인증은 필수입니다.",
 
     USERINFO_EDIT_SUCCESS : "내 정보 변경이 완료되었습니다.",
 

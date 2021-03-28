@@ -11,7 +11,7 @@ const config = require("../../config/config");
 const facebookCredentials = require("../../config/loginKey").facebook;
 const queryString = require("querystring");
 const { patch } = require("../routes/userRoute");
-
+const nodemailer = require('nodemailer');
 /**
  * 2020.12.06
  * 회원가입 API
@@ -20,7 +20,7 @@ const { patch } = require("../routes/userRoute");
  * response body: token, userInfoIdx
  */
 exports.signUp = async function (req, res) {
-  const { nickname, email, password } = req.body;
+  const { nickname, email, password, type } = req.body;
 
   //body 값 확인
   if (!nickname)
@@ -64,7 +64,7 @@ exports.signUp = async function (req, res) {
 
     const signUpUserResult = await query(
       `INSERT INTO userInfo (nickname, email, password, type) VALUES (?, ?, ?, ?)`,
-      [nickname, email, hashedPwd, "local"]
+      [nickname, email, hashedPwd, type]
     );
 
     //토큰 생성
@@ -284,6 +284,7 @@ exports.kakaoLogin = async function (req, res) {
         responseMessage.EMPTY_KAKAOTOKEN
       )
     );
+    console.log(kakaoAccessToken)
 
   try {
     const options = {
@@ -296,6 +297,8 @@ exports.kakaoLogin = async function (req, res) {
     };
     const userInfo = await request(options);
 
+    console.log(userInfo)
+
     const check = await query(
       `SELECT userIdx, nickname, email, password FROM userInfo WHERE email = ?`,
       [userInfo.kakao_account.email]
@@ -303,7 +306,7 @@ exports.kakaoLogin = async function (req, res) {
     let userIdx = 0;
     if (check.length !== 1) {
       // 새로운 유저 회원 가입
-      console.log("새로운 유저 회원 가입");
+      console.log("새로운 유저 회원 가입 가능");
       // const signUpUserResult = await query(
       //   `INSERT INTO userInfo (nickname, email, profile, type) VALUES (?, ?, ?, 'kakao')`,
       //   [
@@ -313,7 +316,7 @@ exports.kakaoLogin = async function (req, res) {
       //   ]
       // );
 
-      // userIdx = signUpUserResult.insertId;
+      userIdx = signUpUserResult.insertId;
 
       return res.send(
         utils.successTrue(
@@ -442,6 +445,47 @@ exports.profileEdit = async function (req, res) {
     );
   }
 };
+
+/**
+ * 2021.03.28
+ * 비밀번호 찾기 API
+ * /find-password
+ */
+//  exports.findPassword = async function (req, res) {
+//    const email = req.body.email
+
+//    // body 값 체크
+//    if (!email)
+//    return res.send(
+//      utils.successFalse(statusCode.NO_CONTENT, responseMessage.EMPTY_EMAIL)
+//    );
+
+//    const getUserResult = await query(
+//     `SELECT userIdx, email FROM userInfo WHERE email = ?`,
+//     [email]
+//   );
+//   // 존재할 경우에 이메일 보내기
+//   if(getUserResult.length >= 1){
+
+
+
+//   } else {
+//     // 존재하지 않는 이메일
+//     return res.send(
+//       utils.successFalse(
+//         statusCode.INVALID_CONTENT,
+//         responseMessage.NO_EXIST_USER
+//       )
+//     );
+  
+//   }
+  
+
+
+
+
+
+//  }
 
 /**
  * 2021.1.31

@@ -141,10 +141,13 @@ paths:
                   type: string
                 nickname:
                   type: string
+                type:
+                  type: string
               example:
                 email: larry@wooly.co.kr
                 password: '1111'
                 nickname: 동동동이
+                type: facebook or kakao or local
       responses:
         '200':
           description: SIGN_UP_SUCCESS
