@@ -16,6 +16,7 @@ router.get("/user/kakao-redirect", user.kakaoRedirect);     //리다리렉션 �
 
 router.post('/facebook', fb, user.facebook);
 router.patch("/user", jwtMiddleware, user.profileEdit);
+//router.post("/find-password", user.findPassword);
 
 router.put('/userInfo/editProfile', jwtMiddleware, upload.single('profile'), user.editProfile);
 

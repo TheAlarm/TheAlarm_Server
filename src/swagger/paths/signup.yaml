@@ -13,10 +13,13 @@ post:
                   type: string
                 nickname:
                   type: string
+                type:
+                  type: string
               example:   # Sample object
                 email: larry@wooly.co.kr
                 password: '1111'
                 nickname: 동동동이
+                type: facebook or kakao or local
 
   responses:
     200:

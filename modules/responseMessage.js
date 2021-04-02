@@ -14,6 +14,7 @@ module.exports = {
 
     EMPTY_EMAIL: "이메일을 확인해 주세요.",
     EMPTY_PASSWORD: "비밀번호를 확인해 주세요.",
+    EMPTY_TYPE: "타입을 입력해 주세요.",
     EMPTY_PASSWORD_OLD: "현재 비밀번호를 입력해주세요.",
     EMPTY_PASSWORD_NEW: "변경할 비밀번호를 입력해주세요.",
     WRONG_PASSWORD_EMAIL: "이메일 또는 비밀번호를 확인해 주세요",
@@ -23,6 +24,7 @@ module.exports = {
     DUPLICATE_EMAIL: "이미 가입된 이메일 입니다.",
     NO_EXIST_USER: "존재하지 않는 회원입니다. ",
     EMPTY_KAKAOTOKEN: "카카오 토큰값을 입력해주세요",
+    EMPTY_ACCEPT_REQUIRE: "이메일 인증은 필수입니다.",
 
     USERINFO_EDIT_SUCCESS : "내 정보 변경이 완료되었습니다",
     PROFILEIMG_EDIT_SUCCESS : "프로필 사진 변경이 완료되었습니다",

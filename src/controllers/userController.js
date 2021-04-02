@@ -11,7 +11,7 @@ const config = require("../../config/config");
 const facebookCredentials = require("../../config/loginKey").facebook;
 const queryString = require("querystring");
 const { patch } = require("../routes/userRoute");
-
+const nodemailer = require("nodemailer");
 /**
  * 2020.12.06
  * 회원가입 API
@@ -20,7 +20,7 @@ const { patch } = require("../routes/userRoute");
  * response body: token, userInfoIdx
  */
 exports.signUp = async function (req, res) {
-  const { nickname, email, password } = req.body;
+  const { nickname, email, password, type } = req.body;
 
   //body 값 확인
   if (!nickname)
@@ -30,6 +30,10 @@ exports.signUp = async function (req, res) {
   if (!email)
     return res.send(
       utils.successFalse(statusCode.NO_CONTENT, responseMessage.EMPTY_EMAIL)
+    );
+  if (!type)
+    return res.send(
+      utils.successFalse(statusCode.NO_CONTENT, responseMessage.EMPTY_TYPE)
     );
   // TODO: 이메일 정규식 추가하기
   // if (!password)
@@ -64,7 +68,7 @@ exports.signUp = async function (req, res) {
 
     const signUpUserResult = await query(
       `INSERT INTO userInfo (nickname, email, password, type) VALUES (?, ?, ?, ?)`,
-      [nickname, email, hashedPwd, "local"]
+      [nickname, email, hashedPwd, type]
     );
 
     //토큰 생성
@@ -80,12 +84,24 @@ exports.signUp = async function (req, res) {
         subject: "userInfo",
       } // 유효 시간은 365일
     );
-    return res.send(
-      utils.successTrue(statusCode.OK, responseMessage.SIGN_UP_SUCCESS, {
-        token,
-        userIdx,
-      })
+
+    const getUserResult = await query(
+      `SELECT userIdx, nickname, email, password, profile FROM userInfo WHERE email = ?`,
+      [email]
     );
+    if(getUserResult.length != 0){
+      const nickname = getUserResult[0].nickname;
+      const profile = getUserResult[0].profile;
+
+      return res.send(
+        utils.successTrue(statusCode.OK, responseMessage.SIGN_UP_SUCCESS, {
+          token,
+          userIdx,
+          nickname,
+          profile
+        })
+      );
+    }
   } catch (err) {
     return res.send(
       utils.successFalse(
@@ -129,7 +145,6 @@ exports.signIn = async function (req, res) {
 
     // 이메일이 존재할 경우
     if (getUserResult.length >= 1) {
-
       const userIdx = getUserResult[0].userIdx;
       const nickname = getUserResult[0].nickname;
       const profile = getUserResult[0].profile;
@@ -151,7 +166,6 @@ exports.signIn = async function (req, res) {
         .update(password)
         .digest("hex");
 
-
       if (getUserResult[0].password !== hashedPwd) {
         return res.send(
           utils.successFalse(
@@ -159,7 +173,7 @@ exports.signIn = async function (req, res) {
             responseMessage.WRONG_PASSWORD_EMAIL
           )
         );
-      } else { 
+      } else {
         return res.send(
           utils.successTrue(statusCode.OK, responseMessage.SIGN_IN_SUCCESS, {
             token,
@@ -284,6 +298,7 @@ exports.kakaoLogin = async function (req, res) {
         responseMessage.EMPTY_KAKAOTOKEN
       )
     );
+  console.log(kakaoAccessToken);
 
   try {
     const options = {
@@ -296,6 +311,8 @@ exports.kakaoLogin = async function (req, res) {
     };
     const userInfo = await request(options);
 
+    console.log(userInfo);
+
     const check = await query(
       `SELECT userIdx, nickname, email, password FROM userInfo WHERE email = ?`,
       [userInfo.kakao_account.email]
@@ -303,7 +320,7 @@ exports.kakaoLogin = async function (req, res) {
     let userIdx = 0;
     if (check.length !== 1) {
       // 새로운 유저 회원 가입
-      console.log("새로운 유저 회원 가입");
+      console.log("새로운 유저 회원 가입 가능");
       // const signUpUserResult = await query(
       //   `INSERT INTO userInfo (nickname, email, profile, type) VALUES (?, ?, ?, 'kakao')`,
       //   [
@@ -313,7 +330,7 @@ exports.kakaoLogin = async function (req, res) {
       //   ]
       // );
 
-      // userIdx = signUpUserResult.insertId;
+     // userIdx = signUpUserResult.insertId;
 
       return res.send(
         utils.successTrue(
@@ -444,6 +461,40 @@ exports.profileEdit = async function (req, res) {
 };
 
 /**
+ * 2021.03.28
+ * 비밀번호 찾기 API
+ * /find-password
+ */
+ exports.findPassword = async function (req, res) {
+   const email = req.body.email
+
+   // body 값 체크
+   if (!email)
+   return res.send(
+     utils.successFalse(statusCode.NO_CONTENT, responseMessage.EMPTY_EMAIL)
+   );
+
+   const getUserResult = await query(
+    `SELECT userIdx, email FROM userInfo WHERE email = ?`,
+    [email]
+  );
+  // 존재할 경우에 이메일 보내기
+  if(getUserResult.length >= 1){
+
+  } else {
+    // 존재하지 않는 이메일
+    return res.send(
+      utils.successFalse(
+        statusCode.INVALID_CONTENT,
+        responseMessage.NO_EXIST_USER
+      )
+    );
+
+  }
+
+ }
+
+/**
  * 2021.1.31
  * 자동 로그인 API
  * /jwt
@@ -552,7 +603,10 @@ exports.editProfile = async function (req, res) {
       return res
         .status(statusCode.BAD_REQUEST)
         .send(
-          utils.successFalse(statusCode.BAD_REQUEST, responseMessage.PROFILEIMG_EDIT_FAIL)
+          utils.successFalse(
+            statusCode.BAD_REQUEST,
+            responseMessage.PROFILEIMG_EDIT_FAIL
+          )
         );
     }
 
@@ -562,7 +616,13 @@ exports.editProfile = async function (req, res) {
 
     return res
       .status(statusCode.OK)
-      .send(utils.successTrue(statusCode.OK, responseMessage.PROFILEIMG_EDIT_SUCCESS, userData[0]));
+      .send(
+        utils.successTrue(
+          statusCode.OK,
+          responseMessage.PROFILEIMG_EDIT_SUCCESS,
+          userData[0]
+        )
+      );
   } catch (err) {
     console.log(err);
 
