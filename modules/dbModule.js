@@ -8,6 +8,7 @@ let mysqlConfig = {
   port: db.port,
   password: db.password,
   database: process.env.NODE_ENV === 'production'? 'alarm-prod' : 'alarm-dev',
+  timezone: 'Asia/Seoul'
 };
 
 async function getMysqlPool() {
