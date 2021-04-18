@@ -36,10 +36,15 @@ patch:
                 type: integer
               "message":
                 type: string
+              "result":
+                type: object
           example:
             isSuccess: true
             code: 200
             message: 내 정보 변경이 완료되었습니다.
+            result: 
+              nickname: "larry"
+              profile: "https://wooly.s3.ap-northeast-2.amazonaws.com/1616938781416.jpg"
     404:
       description: OK
       content:
