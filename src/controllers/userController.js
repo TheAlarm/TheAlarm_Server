@@ -10,9 +10,6 @@ const jwt = require("jsonwebtoken");
 const config = require("../../config/config");
 const facebookCredentials = require("../../config/loginKey").facebook;
 const queryString = require("querystring");
-const { patch } = require("../routes/userRoute");
-const nodemailer = require("nodemailer");
-const { userInfo } = require("os");
 
 async function generateToken(userIdx, id) {
   let token = await jwt.sign(
@@ -63,20 +60,7 @@ async function getUserById(userIdx) {
   return result[0]
 }
 
-async function getUserResponse(userIdx) {
-  const user = getUserById(userIdx)
-
-  let token = await generateToken(user.userIdx, user.nickname)
-  return res.send(
-    utils.successTrue(statusCode.OK, responseMessage.SIGN_UP_SUCCESS, {
-      token: token,
-      userIdx: user.userIdx,
-      nickname: user.nickname,
-      profile: user.profile
-    })
-  );
-}
-
+// TODO: 이메일 정규식 추가하기
 /**
  * 2020.12.06
  * 회원가입 API
@@ -100,11 +84,6 @@ exports.signUp = async function (req, res) {
     return res.send(
       utils.successFalse(statusCode.NO_CONTENT, responseMessage.EMPTY_TYPE)
     );
-  // TODO: 이메일 정규식 추가하기
-  // if (!password)
-  //   return res.send(
-  //     utils.successFalse(statusCode.NO_CONTENT, responseMessage.EMPTY_PASSWORD)
-  //   );
   if (password.length < 4 || password.length > 10)
     return res.send(
       utils.successFalse(
@@ -114,11 +93,8 @@ exports.signUp = async function (req, res) {
     );
   try {
     // 이메일 중복 확인
-    const getUserEmailResult = await query(
-      `SELECT email FROM userInfo WHERE email = ?`,
-      [email]
-    );
-    if (getUserEmailResult.length > 0)
+    const existUser = await getUserByEmail(email) != null
+    if (existUser)
       return res.send(
         utils.successFalse(
           statusCode.INVALID_CONTENT,
@@ -126,17 +102,21 @@ exports.signUp = async function (req, res) {
         )
       );
 
-    const hashedPwd = await crypto
-      .createHash("sha512")
-      .update(password)
-      .digest("hex");
-
+    const hashedPwd = await cryptoPassword(password)
     const signUpUserResult = await query(
       `INSERT INTO userInfo (nickname, email, password, type) VALUES (?, ?, ?, ?)`,
       [nickname, email, hashedPwd, type]
     );
-
-    return getUserResponse(signUpUserResult.insertId)
+    const user = getUserById(signUpUserResult.userIdx)
+    let token = await generateToken(user.userIdx, user.nickname)
+    return res.send(
+      utils.successTrue(statusCode.OK, responseMessage.SIGN_UP_SUCCESS, {
+        token: token,
+        userIdx: user.userIdx,
+        nickname: user.nickname,
+        profile: user.profile
+      })
+    );
   } catch (err) {
     return res.send(
       utils.successFalse(
