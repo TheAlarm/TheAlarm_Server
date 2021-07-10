@@ -73,6 +73,15 @@ async function getUserById(userIdx) {
   return result[0]
 }
 
+function successUser(token, user, message) {
+  return utils.successTrue(statusCode.OK, message, {
+    token: token,
+    userIdx: user.userIdx,
+    nickname: user.nickname,
+    profile: user.profile,
+  });
+}
+
 // TODO: 이메일 정규식 추가하기
 /**
  * 2020.12.06
@@ -121,15 +130,10 @@ exports.signUp = async function (req, res) {
       [nickname, email, hashedPwd, type]
     );
     const user = getUserById(signUpUserResult.userIdx)
-    let token = await generateToken(user.userIdx, user.nickname)
-    return res.send(
-      utils.successTrue(statusCode.OK, responseMessage.SIGN_UP_SUCCESS, {
-        token: token,
-        userIdx: user.userIdx,
-        nickname: user.nickname,
-        profile: user.profile,
-      })
-    );
+
+    const token = await generateToken(user.userIdx, user.nickname)
+
+    return res.send(successUser(token, user, responseMessage.SIGN_UP_SUCCESS))
   } catch (err) {
     return res.send(
       utils.successFalse(
@@ -183,15 +187,8 @@ exports.signIn = async function (req, res) {
       );
     } 
 
-    let token = await generateToken(user.userIdx, user.nickname)
-    return res.send(
-      utils.successTrue(statusCode.OK, responseMessage.SIGN_IN_SUCCESS, {
-        token: token,
-        userIdx: user.userIdx,
-        nickname: user.nickname,
-        profile: user.profile,
-      })
-    );
+    const token = await generateToken(user.userIdx, user.nickname)
+    return res.send(successUser(token, user, responseMessage.SIGN_IN_SUCCESS))
   } catch (err) {
     return res.send(
       utils.successFalse(
@@ -329,14 +326,7 @@ exports.kakaoLogin = async function (req, res) {
     console.log("기존 회원 로그인");
     // 토큰 생성
     const token = await generateToken(user.userIdx, user.nickname)
-    return res.send(
-      utils.successTrue(statusCode.OK, responseMessage.KAKAO_LOGIN_SUCCESS, {
-        token: token,
-        userIdx: user.userIdx,
-        nickname: user.nickname,
-        profile: user.profile,
-      })
-    );
+    return res.send(successUser(token, user, responseMessage.KAKAO_LOGIN_SUCCESS))
   } catch (err) {
     return res.send(
       utils.successFalse(
