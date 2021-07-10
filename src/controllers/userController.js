@@ -34,6 +34,19 @@ async function cryptoPassword(password) {
       .digest("hex");
 }
 
+async function getUserByKakaoId(id) {
+  const result = await query(
+    `SELECT userIdx, nickname, email, password, profile FROM userInfo WHERE email = ?`,
+    [id]
+  );
+
+  if (result.length == 0) {
+    return null
+  }
+
+  return result[0]
+}
+
 async function getUserByEmail(email) {
   const result = await query(
     `SELECT userIdx, nickname, email, password, profile FROM userInfo WHERE email = ?`,
@@ -114,7 +127,7 @@ exports.signUp = async function (req, res) {
         token: token,
         userIdx: user.userIdx,
         nickname: user.nickname,
-        profile: user.profile
+        profile: user.profile,
       })
     );
   } catch (err) {
@@ -272,7 +285,6 @@ exports.kakaoRedirect = async function (req, res) {
  * /kakaoLogin
  * request header : Bearer {ACCESS_TOKEN}
  */
-
 exports.kakaoLogin = async function (req, res) {
   const kakaoAccessToken = req.body.kakaoAccessToken;
 
@@ -298,25 +310,10 @@ exports.kakaoLogin = async function (req, res) {
 
     console.log(userInfo);
 
-    const check = await query(
-      `SELECT userIdx, nickname, email, password FROM userInfo WHERE email = ?`,
-      [userInfo.id]
-    );
-    let userIdx = 0;
-    if (check.length !== 1) {
-      // 새로운 유저 회원 가입
+    //TODO: kakao 에서 주는 식별자인 id 를 활용한 column 이 존재해야함.
+    const user = await getUserByKakaoId(userInfo.kakao_account.email)
+    if (user == null) { // 새로운 유저 회원 가입
       console.log("새로운 유저 회원 가입 가능");
-      // const signUpUserResult = await query(
-      //   `INSERT INTO userInfo (nickname, email, profile, type) VALUES (?, ?, ?, 'kakao')`,
-      //   [
-      //     userInfo.properties.nickname,
-      //     userInfo.kakao_account.email,
-      //     userInfo.properties.profile_image,
-      //   ]
-      // );
-
-     // userIdx = signUpUserResult.insertId;
-
       return res.send(
         utils.successTrue(
           statusCode.CREATED,
@@ -327,18 +324,17 @@ exports.kakaoLogin = async function (req, res) {
           }
         )
       );
-    } else {
-      // 기존 회원 로그인
-      console.log("기존 회원 로그인");
-      userIdx = check[0].userIdx;
-    }
-
+    } 
+    // 기존 회원 로그인
+    console.log("기존 회원 로그인");
     // 토큰 생성
-    let token = await generateToken(userIdx, userInfo.properties.nickname)
+    const token = await generateToken(user.userIdx, user.nickname)
     return res.send(
       utils.successTrue(statusCode.OK, responseMessage.KAKAO_LOGIN_SUCCESS, {
-        token,
-        userIdx,
+        token: token,
+        userIdx: user.userIdx,
+        nickname: user.nickname,
+        profile: user.profile,
       })
     );
   } catch (err) {
