@@ -12,6 +12,23 @@ const facebookCredentials = require("../../config/loginKey").facebook;
 const queryString = require("querystring");
 const { patch } = require("../routes/userRoute");
 const nodemailer = require("nodemailer");
+
+async function generateToken(userIdx, id) {
+  let token = await jwt.sign(
+    {
+      userIdx: userIdx,
+      id: id,
+    }, // 토큰의 내용(payload)
+    config.SECRET_ACCESS_KEY, // 비밀 키
+    {
+      expiresIn: "365d",
+      subject: "userInfo",
+    } // 유효 시간은 365일
+  );
+  console.log(token);
+  return token;
+}
+
 /**
  * 2020.12.06
  * 회원가입 API
@@ -73,18 +90,7 @@ exports.signUp = async function (req, res) {
 
     //토큰 생성
     const userIdx = signUpUserResult.insertId;
-    let token = await jwt.sign(
-      {
-        userIdx: userIdx,
-        id: nickname,
-      }, // 토큰의 내용(payload)
-      config.SECRET_ACCESS_KEY, // 비밀 키
-      {
-        expiresIn: "365d",
-        subject: "userInfo",
-      } // 유효 시간은 365일
-    );
-
+    let token = await generateToken(userIdx, nickname)
     const getUserResult = await query(
       `SELECT userIdx, nickname, email, password, profile FROM userInfo WHERE email = ?`,
       [email]
@@ -149,17 +155,7 @@ exports.signIn = async function (req, res) {
       const nickname = getUserResult[0].nickname;
       const profile = getUserResult[0].profile;
 
-      let token = await jwt.sign(
-        {
-          userIdx: userIdx,
-          id: getUserResult[0].nickname,
-        }, // 토큰의 내용(payload)
-        config.SECRET_ACCESS_KEY, // 비밀 키
-        {
-          expiresIn: "365d",
-          subject: "userInfo",
-        } // 유효 시간은 365일
-      );
+      let token = await generateToken(userIdx, getUserResult[0].nickname,)
 
       const hashedPwd = await crypto
         .createHash("sha512")
@@ -348,18 +344,7 @@ exports.kakaoLogin = async function (req, res) {
       userIdx = check[0].userIdx;
     }
     // 토큰 생성
-    let token = await jwt.sign(
-      {
-        userIdx: userIdx,
-        id: userInfo.properties.nickname,
-      }, // 토큰의 내용(payload)
-      config.SECRET_ACCESS_KEY, // 비밀 키
-      {
-        expiresIn: "365d",
-        subject: "userInfo",
-      } // 유효 시간은 365일
-    );
-    console.log(token);
+    let token = await generateToken(userIdx, userInfo.properties.nickname)
     return res.send(
       utils.successTrue(statusCode.OK, responseMessage.KAKAO_LOGIN_SUCCESS, {
         token,
@@ -537,19 +522,7 @@ exports.facebook = async function (req, res) {
     }
 
     // 토큰 생성
-    let token = await jwt.sign(
-      {
-        userIdx: userIdx,
-        id: name,
-      }, // 토큰의 내용(payload)
-      config.SECRET_ACCESS_KEY, // 비밀 키
-      {
-        expiresIn: "365d",
-        subject: "userInfo",
-      } // 유효 시간은 365일
-    );
-
-    console.log(token);
+    let token = await generateToken(userIdx, name)
     return res.send(
       utils.successTrue(statusCode.OK, responseMessage.FACEBOOK_LOGIN_SUCCESS, {
         token,
