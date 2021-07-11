@@ -1,86 +1,15 @@
 const { query } = require("../../modules/dbModule");
 const utils = require("../../modules/response");
-const axios = require("axios");
-const { response } = require("express");
+// const axios = require("axios");
+// const { response } = require("express");
 const request = require("request-promise");
 const statusCode = require("../../modules/statusCode");
 const responseMessage = require("../../modules/responseMessage");
 const crypto = require("crypto");
-const jwt = require("jsonwebtoken");
 const config = require("../../config/config");
-const facebookCredentials = require("../../config/loginKey").facebook;
-const queryString = require("querystring");
-
-async function generateToken(userIdx, id) {
-  let token = await jwt.sign(
-    {
-      userIdx: userIdx,
-      id: id,
-    }, // 토큰의 내용(payload)
-    config.SECRET_ACCESS_KEY, // 비밀 키
-    {
-      expiresIn: "365d",
-      subject: "userInfo",
-    } // 유효 시간은 365일
-  );
-  console.log(token);
-  return token;
-}
-
-async function cryptoPassword(password) {
-  return await crypto
-      .createHash("sha512")
-      .update(password)
-      .digest("hex");
-}
-
-async function getUserByKakaoId(id) {
-  const result = await query(
-    `SELECT userIdx, nickname, email, password, profile FROM userInfo WHERE email = ?`,
-    [id]
-  );
-
-  if (result.length == 0) {
-    return null
-  }
-
-  return result[0]
-}
-
-async function getUserByEmail(email) {
-  const result = await query(
-    `SELECT userIdx, nickname, email, password, profile FROM userInfo WHERE email = ?`,
-    [email]
-  );
-
-  if (result.length == 0) {
-    return null
-  }
-
-  return result[0]
-}
-
-async function getUserById(userIdx) {
-  const result = await query(
-    `SELECT userIdx, nickname, email, password, profile FROM userInfo WHERE userIdx = ?`,
-    [userIdx]
-  );
-
-  if (result.length == 0) {
-    return null
-  }
-
-  return result[0]
-}
-
-function successUser(token, user, message) {
-  return utils.successTrue(statusCode.OK, message, {
-    token: token,
-    userIdx: user.userIdx,
-    nickname: user.nickname,
-    profile: user.profile,
-  });
-}
+// const facebookCredentials = require("../../config/loginKey").facebook;
+// const queryString = require("querystring");
+const userUtil = require("../../modules/userUtil");
 
 // TODO: 이메일 정규식 추가하기
 /**
@@ -115,7 +44,7 @@ exports.signUp = async function (req, res) {
     );
   try {
     // 이메일 중복 확인
-    const existUser = await getUserByEmail(email) != null
+    const existUser = await userUtil.getUserByEmail(email) != null
     if (existUser)
       return res.send(
         utils.successFalse(
@@ -124,16 +53,16 @@ exports.signUp = async function (req, res) {
         )
       );
 
-    const hashedPwd = await cryptoPassword(password)
+    const hashedPwd = await userUtil.cryptoPassword(password)
     const signUpUserResult = await query(
       `INSERT INTO userInfo (nickname, email, password, type) VALUES (?, ?, ?, ?)`,
       [nickname, email, hashedPwd, type]
     );
-    const user = getUserById(signUpUserResult.userIdx)
+    const user = userUtil.getUserById(signUpUserResult.userIdx)
 
-    const token = await generateToken(user.userIdx, user.nickname)
+    const token = await userUtil.generateToken(user.userIdx, user.nickname)
 
-    return res.send(successUser(token, user, responseMessage.SIGN_UP_SUCCESS))
+    return res.send(userUtil.successUser(token, user, responseMessage.SIGN_UP_SUCCESS))
   } catch (err) {
     return res.send(
       utils.successFalse(
@@ -169,7 +98,7 @@ exports.signIn = async function (req, res) {
         )
       );
 
-    const user = await getUserByEmail(email)
+    const user = await userUtil.getUserByEmail(email)
     if (user == null) { // 이메일이 존재하지 않음.
       return res.send(
         utils.successFalse(
@@ -178,7 +107,7 @@ exports.signIn = async function (req, res) {
         )
       ); 
     }
-    if (user.password !== await cryptoPassword(password)) { // 비밀번호가 일치하지 않음.
+    if (user.password !== await userUtil.cryptoPassword(password)) { // 비밀번호가 일치하지 않음.
       return res.send(
         utils.successFalse(
           statusCode.NO_CONTENT,
@@ -187,8 +116,8 @@ exports.signIn = async function (req, res) {
       );
     } 
 
-    const token = await generateToken(user.userIdx, user.nickname)
-    return res.send(successUser(token, user, responseMessage.SIGN_IN_SUCCESS))
+    const token = await userUtil.generateToken(user.userIdx, user.nickname)
+    return res.send(userUtil.successUser(token, user, responseMessage.SIGN_IN_SUCCESS))
   } catch (err) {
     return res.send(
       utils.successFalse(
@@ -308,7 +237,7 @@ exports.kakaoLogin = async function (req, res) {
     console.log(userInfo);
 
     //TODO: kakao 에서 주는 식별자인 id 를 활용한 column 이 존재해야함.
-    const user = await getUserByKakaoId(userInfo.kakao_account.email)
+    const user = await userUtil.getUserByKakaoId(userInfo.kakao_account.email)
     if (user == null) { // 새로운 유저 회원 가입
       console.log("새로운 유저 회원 가입 가능");
       return res.send(
@@ -325,8 +254,8 @@ exports.kakaoLogin = async function (req, res) {
     // 기존 회원 로그인
     console.log("기존 회원 로그인");
     // 토큰 생성
-    const token = await generateToken(user.userIdx, user.nickname)
-    return res.send(successUser(token, user, responseMessage.KAKAO_LOGIN_SUCCESS))
+    const token = await userUtil.generateToken(user.userIdx, user.nickname)
+    return res.send(userUtil.successUser(token, user, responseMessage.KAKAO_LOGIN_SUCCESS))
   } catch (err) {
     return res.send(
       utils.successFalse(
@@ -498,7 +427,7 @@ exports.facebook = async function (req, res) {
     }
 
     // 토큰 생성
-    let token = await generateToken(userIdx, name)
+    let token = await userUtil.generateToken(userIdx, name)
     return res.send(
       utils.successTrue(statusCode.OK, responseMessage.FACEBOOK_LOGIN_SUCCESS, {
         token,
