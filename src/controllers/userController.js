@@ -402,7 +402,7 @@ exports.check = async function (req, res) {
 exports.facebook = async function (req, res) {
   console.log("페이스북 로그인");
   try {
-    const { email, name, profile } = req.decoded;
+    const { email, name, profile, id } = req.decoded; // id는 추후에 DB에 id라는 필드가 생성되었을 때 저장할 것
 
     //
     const isExistUser = await query(

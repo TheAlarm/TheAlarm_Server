@@ -21,7 +21,8 @@ module.exports = (req, res, next) => {
             req.decoded = {
                 email: data.email,
                 name: data.name,
-                profile: data.picture.data.url
+                profile: data.picture.data.url,
+                id: data.id
             };
 
             next();
