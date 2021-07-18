@@ -582,7 +582,12 @@ components:
         - token
         - userIdx
         - nickname
+        - email
+        - password
+        - type
         - profile
+        - createdAt
+        - socialID
       properties:
         token:
           type: string
@@ -593,9 +598,24 @@ components:
         nickname:
           type: string
           description: 유저 닉네임
+        email:
+          type: string
+          description: 유저 이메일
+        password:
+          type: string
+          description: 유저 비밀번호
+        type:
+          type: string
+          description: '회원가입 경로(local, facebook, kakao)'
         profile:
           type: string
           description: 유저 프로필 사진
+        createdAt:
+          type: string
+          description: 유저 회원가입 시간
+        socialID:
+          type: string
+          description: '소셜 로그인 시, 소셜 ID값'
     Error:
       type: object
       properties:
