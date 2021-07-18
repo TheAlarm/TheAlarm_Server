@@ -10,8 +10,79 @@ const jwt = require("jsonwebtoken");
 const config = require("../../config/config");
 const facebookCredentials = require("../../config/loginKey").facebook;
 const queryString = require("querystring");
-const { patch } = require("../routes/userRoute");
-const nodemailer = require("nodemailer");
+
+async function generateToken(userIdx, id) {
+  let token = await jwt.sign(
+    {
+      userIdx: userIdx,
+      id: id,
+    }, // 토큰의 내용(payload)
+    config.SECRET_ACCESS_KEY, // 비밀 키
+    {
+      expiresIn: "365d",
+      subject: "userInfo",
+    } // 유효 시간은 365일
+  );
+  console.log(token);
+  return token;
+}
+
+async function cryptoPassword(password) {
+  return await crypto
+      .createHash("sha512")
+      .update(password)
+      .digest("hex");
+}
+
+async function getUserByKakaoId(id) {
+  const result = await query(
+    `SELECT userIdx, nickname, email, password, profile FROM userInfo WHERE email = ?`,
+    [id]
+  );
+
+  if (result.length == 0) {
+    return null
+  }
+
+  return result[0]
+}
+
+async function getUserByEmail(email) {
+  const result = await query(
+    `SELECT userIdx, nickname, email, password, profile FROM userInfo WHERE email = ?`,
+    [email]
+  );
+
+  if (result.length == 0) {
+    return null
+  }
+
+  return result[0]
+}
+
+async function getUserById(userIdx) {
+  const result = await query(
+    `SELECT userIdx, nickname, email, password, profile FROM userInfo WHERE userIdx = ?`,
+    [userIdx]
+  );
+
+  if (result.length == 0) {
+    return null
+  }
+
+  return result[0]
+}
+
+function successUser(token, user, message) {
+  return utils.successTrue(statusCode.OK, message, {
+    token: token,
+    userIdx: user.userIdx,
+    nickname: user.nickname,
+    profile: user.profile,
+  });
+}
+
+// TODO: 이메일 정규식 추가하기
 /**
  * 2020.12.06
  * 회원가입 API
@@ -35,11 +106,6 @@ exports.signUp = async function (req, res) {
     return res.send(
       utils.successFalse(statusCode.NO_CONTENT, responseMessage.EMPTY_TYPE)
     );
-  // TODO: 이메일 정규식 추가하기
-  // if (!password)
-  //   return res.send(
-  //     utils.successFalse(statusCode.NO_CONTENT, responseMessage.EMPTY_PASSWORD)
-  //   );
   if (password.length < 4 || password.length > 10)
     return res.send(
       utils.successFalse(
@@ -49,11 +115,8 @@ exports.signUp = async function (req, res) {
     );
   try {
     // 이메일 중복 확인
-    const getUserEmailResult = await query(
-      `SELECT email FROM userInfo WHERE email = ?`,
-      [email]
-    );
-    if (getUserEmailResult.length > 0)
+    const existUser = await getUserByEmail(email) != null
+    if (existUser)
       return res.send(
         utils.successFalse(
           statusCode.INVALID_CONTENT,
@@ -61,47 +124,16 @@ exports.signUp = async function (req, res) {
         )
       );
 
-    const hashedPwd = await crypto
-      .createHash("sha512")
-      .update(password)
-      .digest("hex");
-
+    const hashedPwd = await cryptoPassword(password)
     const signUpUserResult = await query(
       `INSERT INTO userInfo (nickname, email, password, type) VALUES (?, ?, ?, ?)`,
       [nickname, email, hashedPwd, type]
     );
+    const user = getUserById(signUpUserResult.userIdx)
 
-    //토큰 생성
-    const userIdx = signUpUserResult.insertId;
-    let token = await jwt.sign(
-      {
-        userIdx: userIdx,
-        id: nickname,
-      }, // 토큰의 내용(payload)
-      config.SECRET_ACCESS_KEY, // 비밀 키
-      {
-        expiresIn: "365d",
-        subject: "userInfo",
-      } // 유효 시간은 365일
-    );
+    const token = await generateToken(user.userIdx, user.nickname)
 
-    const getUserResult = await query(
-      `SELECT userIdx, nickname, email, password, profile FROM userInfo WHERE email = ?`,
-      [email]
-    );
-    if(getUserResult.length != 0){
-      const nickname = getUserResult[0].nickname;
-      const profile = getUserResult[0].profile;
-
-      return res.send(
-        utils.successTrue(statusCode.OK, responseMessage.SIGN_UP_SUCCESS, {
-          token,
-          userIdx,
-          nickname,
-          profile
-        })
-      );
-    }
+    return res.send(successUser(token, user, responseMessage.SIGN_UP_SUCCESS))
   } catch (err) {
     return res.send(
       utils.successFalse(
@@ -137,61 +169,26 @@ exports.signIn = async function (req, res) {
         )
       );
 
-    // 로그인 확인
-    const getUserResult = await query(
-      `SELECT userIdx, nickname, email, password, profile FROM userInfo WHERE email = ?`,
-      [email]
-    );
-
-    // 이메일이 존재할 경우
-    if (getUserResult.length >= 1) {
-      const userIdx = getUserResult[0].userIdx;
-      const nickname = getUserResult[0].nickname;
-      const profile = getUserResult[0].profile;
-
-      let token = await jwt.sign(
-        {
-          userIdx: userIdx,
-          id: getUserResult[0].nickname,
-        }, // 토큰의 내용(payload)
-        config.SECRET_ACCESS_KEY, // 비밀 키
-        {
-          expiresIn: "365d",
-          subject: "userInfo",
-        } // 유효 시간은 365일
-      );
-
-      const hashedPwd = await crypto
-        .createHash("sha512")
-        .update(password)
-        .digest("hex");
-
-      if (getUserResult[0].password !== hashedPwd) {
-        return res.send(
-          utils.successFalse(
-            statusCode.NO_CONTENT,
-            responseMessage.WRONG_PASSWORD_EMAIL
-          )
-        );
-      } else {
-        return res.send(
-          utils.successTrue(statusCode.OK, responseMessage.SIGN_IN_SUCCESS, {
-            token,
-            userIdx,
-            nickname,
-            profile,
-          })
-        );
-      }
-      // 이메일이 존재하지 않을 경우
-    } else {
+    const user = await getUserByEmail(email)
+    if (user == null) { // 이메일이 존재하지 않음.
       return res.send(
         utils.successFalse(
           statusCode.INVALID_CONTENT,
           responseMessage.NO_EXIST_USER
         )
-      );
+      ); 
     }
+    if (user.password !== await cryptoPassword(password)) { // 비밀번호가 일치하지 않음.
+      return res.send(
+        utils.successFalse(
+          statusCode.NO_CONTENT,
+          responseMessage.WRONG_PASSWORD_EMAIL
+        )
+      );
+    } 
+
+    const token = await generateToken(user.userIdx, user.nickname)
+    return res.send(successUser(token, user, responseMessage.SIGN_IN_SUCCESS))
   } catch (err) {
     return res.send(
       utils.successFalse(
@@ -285,11 +282,8 @@ exports.kakaoRedirect = async function (req, res) {
  * /kakaoLogin
  * request header : Bearer {ACCESS_TOKEN}
  */
-
 exports.kakaoLogin = async function (req, res) {
   const kakaoAccessToken = req.body.kakaoAccessToken;
-  // const email = req.body.email;
-  // const profile = req.body.profile;
 
   if (!kakaoAccessToken)
     return res.send(
@@ -313,25 +307,10 @@ exports.kakaoLogin = async function (req, res) {
 
     console.log(userInfo);
 
-    const check = await query(
-      `SELECT userIdx, nickname, email, password FROM userInfo WHERE email = ?`,
-      [userInfo.kakao_account.email]
-    );
-    let userIdx = 0;
-    if (check.length !== 1) {
-      // 새로운 유저 회원 가입
+    //TODO: kakao 에서 주는 식별자인 id 를 활용한 column 이 존재해야함.
+    const user = await getUserByKakaoId(userInfo.kakao_account.email)
+    if (user == null) { // 새로운 유저 회원 가입
       console.log("새로운 유저 회원 가입 가능");
-      // const signUpUserResult = await query(
-      //   `INSERT INTO userInfo (nickname, email, profile, type) VALUES (?, ?, ?, 'kakao')`,
-      //   [
-      //     userInfo.properties.nickname,
-      //     userInfo.kakao_account.email,
-      //     userInfo.properties.profile_image,
-      //   ]
-      // );
-
-     // userIdx = signUpUserResult.insertId;
-
       return res.send(
         utils.successTrue(
           statusCode.CREATED,
@@ -342,30 +321,12 @@ exports.kakaoLogin = async function (req, res) {
           }
         )
       );
-    } else {
-      // 기존 회원 로그인
-      console.log("기존 회원 로그인");
-      userIdx = check[0].userIdx;
-    }
+    } 
+    // 기존 회원 로그인
+    console.log("기존 회원 로그인");
     // 토큰 생성
-    let token = await jwt.sign(
-      {
-        userIdx: userIdx,
-        id: userInfo.properties.nickname,
-      }, // 토큰의 내용(payload)
-      config.SECRET_ACCESS_KEY, // 비밀 키
-      {
-        expiresIn: "365d",
-        subject: "userInfo",
-      } // 유효 시간은 365일
-    );
-    console.log(token);
-    return res.send(
-      utils.successTrue(statusCode.OK, responseMessage.KAKAO_LOGIN_SUCCESS, {
-        token,
-        userIdx,
-      })
-    );
+    const token = await generateToken(user.userIdx, user.nickname)
+    return res.send(successUser(token, user, responseMessage.KAKAO_LOGIN_SUCCESS))
   } catch (err) {
     return res.send(
       utils.successFalse(
@@ -537,19 +498,7 @@ exports.facebook = async function (req, res) {
     }
 
     // 토큰 생성
-    let token = await jwt.sign(
-      {
-        userIdx: userIdx,
-        id: name,
-      }, // 토큰의 내용(payload)
-      config.SECRET_ACCESS_KEY, // 비밀 키
-      {
-        expiresIn: "365d",
-        subject: "userInfo",
-      } // 유효 시간은 365일
-    );
-
-    console.log(token);
+    let token = await generateToken(userIdx, name)
     return res.send(
       utils.successTrue(statusCode.OK, responseMessage.FACEBOOK_LOGIN_SUCCESS, {
         token,
