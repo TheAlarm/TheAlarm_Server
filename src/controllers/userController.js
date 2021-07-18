@@ -247,6 +247,7 @@ exports.kakaoLogin = async function (req, res) {
           {
             nickname: userInfo.properties.nickname,
             email: userInfo.kakao_account.email,
+            socialID: userInfo.id
           }
         )
       );
@@ -399,14 +400,19 @@ exports.check = async function (req, res) {
   );
 };
 
+/**
+ * 페이스북 로그인 API
+ * /facebook
+ */
 exports.facebook = async function (req, res) {
   console.log("페이스북 로그인");
   try {
     const { email, name, profile, id } = req.decoded; // id는 추후에 DB에 id라는 필드가 생성되었을 때 저장할 것
+    socialID = Number(id);
 
     //
     const isExistUser = await query(
-      `SELECT userIdx, nickname, email, password FROM userInfo WHERE email = ?`,
+      `SELECT userIdx, nickname, email, password, socialID FROM userInfo WHERE email = ?`,
       [email]
     );
     let userIdx = 0;
@@ -415,25 +421,32 @@ exports.facebook = async function (req, res) {
       // 새로운 유저 회원 가입
       console.log("새로운 유저 회원 가입(페북)");
       const signUpFbResult = await query(
-        `INSERT INTO userInfo (nickname, email, profile, type) VALUES (?, ?, ?, ?)`,
-        [name, email, profile, "facebook"]
+        `INSERT INTO userInfo (nickname, email, profile, type, socialID) VALUES (?, ?, ?, ?, ?)`,
+        [name, email, profile, "facebook", id]
       );
 
+      // 토큰 생성
+      let token = await userUtil.generateToken(userIdx, name)
       userIdx = signUpFbResult.insertId;
+      return res.send(
+        utils.successTrue(statusCode.OK, responseMessage.FACEBOOK_LOGIN_SUCCESS, {
+          token,
+          userIdx,
+          socialID
+        })
+      );
     } else {
       // 기존 회원 로그인
       console.log("기존 회원 로그인(페북)");
       userIdx = isExistUser[0].userIdx;
+      socialID = isExistUser[0].socialID;
+
+      // 토큰 생성
+      let token = await userUtil.generateToken(userIdx, name);
+      return res.send(userUtil.successUser(token, isExistUser, responseMessage.FACEBOOK_LOGIN_SUCCESS));
     }
 
-    // 토큰 생성
-    let token = await userUtil.generateToken(userIdx, name)
-    return res.send(
-      utils.successTrue(statusCode.OK, responseMessage.FACEBOOK_LOGIN_SUCCESS, {
-        token,
-        userIdx,
-      })
-    );
+    
   } catch (err) {
     console.log(err);
 

@@ -76,7 +76,8 @@ function successUser(token, user, message) {
         password: user.password,
         type: user.type,
         profile: user.profile,
-        createdAt: user.createdAt
+        createdAt: user.createdAt,
+        socialID: user.socialID
     });
 }
 
